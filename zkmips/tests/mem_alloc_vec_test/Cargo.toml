@@ -1,0 +1,8 @@
+[package]
+name = "mem_alloc_vec_test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zkm-runtime = { git = "https://github.com/zkMIPS/zkm.git" }
+memory_allocations = { path = "../../../shared/memory_allocations"}
