@@ -1,0 +1,9 @@
+[package]
+version = "0.1.0"
+name = "simple_arithmetic_test-program"
+edition = "2021"
+
+[dependencies]
+alloy-sol-types = { workspace = true }
+sp1-zkvm = "1.2.0"
+simple_arithmetic_test-lib = { path = "../lib" }

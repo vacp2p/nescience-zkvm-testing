@@ -1,0 +1,9 @@
+[package]
+version = "0.1.0"
+name = "mem_alloc_vec_test-program"
+edition = "2021"
+
+[dependencies]
+alloy-sol-types = { workspace = true }
+sp1-zkvm = "1.2.0"
+mem_alloc_vec_test-lib = { path = "../lib" }
