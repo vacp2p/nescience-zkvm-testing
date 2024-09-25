@@ -7,3 +7,4 @@ To run test, corresponding to zkVM of choise read
 
 - [zkWASM](./zkwasm/README.md)
 - [zkMIPS](./zkmips/README.md)
+- [Valida](./valida/README.md)
