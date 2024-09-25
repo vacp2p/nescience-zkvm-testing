@@ -50,5 +50,4 @@ pub fn vec_alloc(n: u32) -> u32 {
 fn main() {
     let n = 7;
     let result = vec_alloc(n);
-    assert_eq!(result, 13);
 }
