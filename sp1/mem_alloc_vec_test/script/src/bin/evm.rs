@@ -40,7 +40,7 @@ enum ProofSystem {
 /// A fixture that can be used to test the verification of SP1 zkVM proofs inside Solidity.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct SP1SimpleArithmeticTestProofFixture {
+struct SP1MemAllocVecTestProofFixture {
     a: u32,
     b: u32,
     n: u32,
