@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use risc0_zkvm::serde::to_vec;
-
-use crate::Job;
-
-pub fn new_jobs() -> Vec<Job> {
-    let mut jobs = Vec::new();
-    for iterations in [100] {
-        jobs.push(Job::new(
-            format!("simlpe_arithmetic_test-{iterations}"),
-            risc0_benchmark_methods::SIMPLE_ARITHMETIC_TEST_ELF,
-            risc0_benchmark_methods::SIMPLE_ARITHMETIC_TEST_ID.into(),
-            to_vec(&iterations).unwrap(),
-            iterations as usize,
-        ));
-    }
-    jobs
-}
+pub mod big_blake2b;
+pub mod big_blake3;
+pub mod big_keccak;
+pub mod big_sha2;
+pub mod ecdsa_verify;
+pub mod ed25519_verify;
+pub mod fibonacci;
+pub mod iter_blake2b;
+pub mod iter_blake3;
+pub mod iter_keccak;
+pub mod iter_sha2;
+pub mod membership;
+pub mod sudoku;
+pub mod simple_arithmetic_test;
+pub mod mem_alloc_vec_test;

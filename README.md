@@ -12,3 +12,4 @@ To run test, corresponding to zkVM of choise read
 - [Valida](./valida/README.md)
 - [SP1](./sp1/README.md)
 - [Nexus](./nexus/README.md)
+- [RISC0](./risc0/README.md)
