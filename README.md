@@ -5,7 +5,7 @@ All tests are Rust-based, so be sure to install it, for example according to [th
 
 # How to run tests
 
-To run test, corresponding to zkVM of choise read
+To run tests corresponding to zkVM of choice, please read the following:
 
 - [zkWASM](./zkwasm/README.md)
 - [zkMIPS](./zkmips/README.md)
