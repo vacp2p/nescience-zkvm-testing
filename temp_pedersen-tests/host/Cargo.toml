@@ -1,0 +1,13 @@
+[package]
+name = "host"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../../shared" }
+methods = { path = "../methods" }
+risc0-zkvm = "2.0.0"
+pasta_curves = "0.5.1"
+
+[features]
+default = [ ]
