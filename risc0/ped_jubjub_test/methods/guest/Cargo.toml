@@ -1,0 +1,11 @@
+[package]
+name = "ped_jubjub_guest"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+risc0-zkvm = { version = "^2.1.0", default-features = false, features = ['std'] }
+jubjub = "0.10.0"
+group = "0.13.0"
