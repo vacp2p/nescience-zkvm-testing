@@ -8,7 +8,7 @@ fn main() {
 
     // TODO: do something with the input
     let g1 = bls12_381::G1Affine::generator();
-    let g1_proj = bls12_381::G1Projective::from(g1); 
+    let g1_proj = bls12_381::G1Projective::from(g1);
     let g2 = g1_proj + g1;
     let g3 = g1 + g2;
     let g4 = g1 + g3;
