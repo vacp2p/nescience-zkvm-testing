@@ -7,9 +7,6 @@ use curve25519_dalek::traits::MultiscalarMul;
 
 #[nexus_rt::main]
 fn main() {
-    // read the input
-    let input: u32 = env::read();
-
     // TODO: do something with the input
     let s1 = Scalar::from(87329482u64);
     let s2 = Scalar::from(37264829u64);

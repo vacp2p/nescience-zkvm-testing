@@ -8,7 +8,7 @@ fn main() {
     let g3 = g1 + g2;
     let g4 = g1 + g3;
     let g5 = g1 + g4;
-        
+
     let s1 = jubjub::Fr::from(87329482u64);
     let s2 = jubjub::Fr::from(37264829u64);
     let s3 = jubjub::Fr::from(98098098u64);
