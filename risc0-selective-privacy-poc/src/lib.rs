@@ -62,6 +62,7 @@ pub fn run_private_execution_of_transfer_program() {
     env_builder.write(&sender_post).unwrap();
     env_builder.write(&receiver_post).unwrap();
     env_builder.write(&commitment_tree_root).unwrap();
+    env_builder.write(&TRANSFER_ID).unwrap();
     let env = env_builder.build().unwrap();
 
     let prover = default_prover();
@@ -71,11 +72,13 @@ pub fn run_private_execution_of_transfer_program() {
 
     let receipt = prove_info.receipt;
     
+    // Sanity check
     receipt.verify(OUTER_ID).unwrap();
     
-    let (nullifier, commitment): ([u32; 8], [u32; 8]) = receipt.journal.decode().unwrap();
-    println!("nullifier: {:?}", nullifier);
-    println!("commitment: {:?}", commitment);
+    let output: [[u32; 8]; 3] = receipt.journal.decode().unwrap();
+    println!("nullifier: {:?}", output[0]);
+    println!("commitment_1: {:?}", output[1]);
+    println!("commitment_2: {:?}", output[2]);
 }
 
 pub fn run_public_execution_of_transfer_program() {
