@@ -3,7 +3,7 @@ use toy_example_core::Account;
 
 
 /// A transfer of balance program.
-/// To be used both in public and private contexts
+/// To be used both in public and private contexts.
 fn main() {
     let sender: Account = env::read();
     let receiver: Account = env::read();

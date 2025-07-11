@@ -9,14 +9,18 @@ use toy_example_core::Account;
 
 /// A private execution of the transfer function.
 /// This actually "burns" a sender private account and "mints" two new private accounts:
-/// one for the recepient with the transfered balance, and another owned by the sender with the remaining balance.
+/// one for the recipient with the transferred balance, and another owned by the sender with the remaining balance.
 fn run_private_execution_of_transfer_program() {
     let commitment_tree_root = [0xdd, 0xee, 0xaa, 0xdd, 0xbb, 0xee, 0xee, 0xff];
     // This is supposed to be an existing private account (UTXO) with balance equal to 150.
     // And it is supposed to be a private account of the user running this private execution (hence the access to the private key)
     let sender_private_key = [0; 8];
-    let mut sender = Account::new_from_private_key(sender_private_key, [1; 8]);
-    sender.balance = 150;
+    let sender = {
+        // Creating it now but it's supposed to be already created by other previous transactions.
+        let mut account = Account::new_from_private_key(sender_private_key, [1; 8]);
+        account.balance = 150;
+        account
+    };
     let balance_to_move: u128 = 3;
 
     // This is the new private account (UTXO) being minted by this private execution.
@@ -35,7 +39,6 @@ fn run_private_execution_of_transfer_program() {
     env_builder.write(&sender_private_key).unwrap();
     env_builder.write(&sender).unwrap();
     env_builder.write(&receiver) .unwrap();
-    env_builder.write(&balance_to_move).unwrap();
     env_builder.write(&sender_post).unwrap();
     env_builder.write(&receiver_post).unwrap();
     env_builder.write(&commitment_tree_root).unwrap();

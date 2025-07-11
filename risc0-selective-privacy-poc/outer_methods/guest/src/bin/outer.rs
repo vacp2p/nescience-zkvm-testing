@@ -5,11 +5,12 @@ use toy_example_core::{Account, hash, compute_nullifier, is_in_commitment_tree};
 /// Circuit for proving correct execution of some program with program id
 /// equal to `program_id` (last input).
 /// 
-/// Currently only supports private execution of a program with two inputs, one
-/// of which must be a fresh new account (for example a private transfer function)
+/// Currently only supports private execution of a program with two input accounts, one
+/// of which must be a fresh new account (`account_2`) (for example a private transfer function).
 /// 
 /// This circuit checks:
 /// - That accounts pre states and post states are consistent with the execution of the given `program_id`.
+/// - That `account_2` is fresh (meaning, for this toy example, that it has 0 balance).
 /// - That `program_id` execution didn't change addresses of the accounts.
 /// 
 /// Outputs:
@@ -20,13 +21,12 @@ fn main() {
     let account_1_private_key: [u32; 8] = env::read();
     let account_1: Account = env::read();
     let account_2: Account = env::read();
-    let balance_to_move: u128 = env::read();
     let account_1_post: Account = env::read();
     let account_2_post: Account = env::read();
     let commitment_tree_root: [u32; 8] = env::read();
     let program_id: [u32; 8] = env::read();
 
-    // Assert account_2 account is fresh
+    // Assert account_2 is a fresh account
     assert_eq!(account_2.balance, 0);
 
     // Prove ownership of account_1 account by proving

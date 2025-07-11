@@ -2,14 +2,23 @@ use risc0_zkvm::{default_executor, ExecutorEnv};
 use toy_example_core::Account;
 use transfer_methods::TRANSFER_ELF;
 
+/// A public execution.
+/// This would be executed by the runtime after checking that
+/// the initiating transaction includes the sender's signature.
 pub fn run_public_execution_of_transfer_program() {
-    let sender_private_key = [0; 8];
-    let mut sender = Account::new_from_private_key(sender_private_key, [1; 8]);
-    sender.balance = 150;
+    // Account fetched from the chain state with 150 in its balance.
+    let sender = {
+        let mut account = Account::new([5; 8], [98; 8]);
+        account.balance = 150;
+        account
+    };
 
-    let receiver_private_key = [99; 8];
-    let mut receiver = Account::new_from_private_key(receiver_private_key, [1; 8]);
-    receiver.balance = 900;
+    // Account fetched from the chain state with 900 in its balance.
+    let receiver = {
+        let mut account = Account::new([6; 8], [99; 8]);
+        account.balance = 900;
+        account
+    };
 
     let balance_to_move: u128 = 3;
 
