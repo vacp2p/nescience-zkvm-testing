@@ -1,0 +1,17 @@
+[package]
+name = "tuki"
+version = "0.12.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = "2.2"
+toy-example-core = {path = "core"}
+transfer-methods = {path = "transfer_methods"}
+outer-methods = {path = "outer_methods"}
+serde = "1.0"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+cuda = ["risc0-zkvm/cuda"]
+default = []
+prove = ["risc0-zkvm/prove"]
