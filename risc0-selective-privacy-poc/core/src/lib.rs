@@ -17,6 +17,10 @@ impl Account {
         Self { address, balance: 0, nonce }
     }
 
+    pub fn new(address: [u32; 8], nonce: [u32; 8]) -> Self {
+        Self { address, balance: 0, nonce }
+    }
+
     /// Returns Hash(Account)
     pub fn commitment(&self) -> [u32; 8] {
         hash(&to_vec(&self).unwrap())
