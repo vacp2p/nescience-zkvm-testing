@@ -12,7 +12,7 @@ pub struct Account {
 
 impl Account {
     /// Creates a new account with address = hash(private_key) and balance = 0
-    pub fn new(private_key: [u32; 8], nonce: [u32; 8]) -> Self {
+    pub fn new_from_private_key(private_key: [u32; 8], nonce: [u32; 8]) -> Self {
         let address = hash(&private_key);
         Self { address, balance: 0, nonce }
     }

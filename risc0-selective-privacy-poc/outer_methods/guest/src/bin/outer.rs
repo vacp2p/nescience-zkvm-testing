@@ -1,6 +1,20 @@
 use risc0_zkvm::{guest::env, sha::{Impl, Sha256}, serde::to_vec};
 use toy_example_core::{Account, hash, compute_nullifier, is_in_commitment_tree};
 
+/// Private execution logic.
+/// Circuit for proving correct execution of some program with program id
+/// equal to `program_id` (last input).
+/// 
+/// Currently only supports private execution of a program with two inputs, one
+/// of which must be a fresh new account (for example a private transfer function)
+/// 
+/// This circuit checks:
+/// - That accounts pre states and post states are consistent with the execution of the given `program_id`.
+/// - That `program_id` execution didn't change addresses of the accounts.
+/// 
+/// Outputs:
+/// - The nullifier for the only existing input account (account_1)
+/// - The commitments for the private accounts post states.
 fn main() {
     // Read inputs
     let account_1_private_key: [u32; 8] = env::read();
@@ -21,7 +35,7 @@ fn main() {
 
     // Compute account_1 account commitment and prove it belongs to commitments tree
     let account_1_commitment = account_1.commitment();
-    assert!(is_in_commitment_tree(account_1_commitment, commitment_tree_root));
+    assert!(is_in_commitment_tree(account_1_commitment, commitment_tree_root)); // <- Dummy implementation
 
     // Compute nullifier of account_1 account
     let account_1_nullifier = compute_nullifier(account_1_commitment, account_1_private_key);
