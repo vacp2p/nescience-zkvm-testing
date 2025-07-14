@@ -1,5 +1,5 @@
 use risc0_zkvm::{guest::env, sha::{Impl, Sha256}, serde::to_vec};
-use toy_example_core::{Account, hash, compute_nullifier, is_in_commitment_tree};
+use toy_example_core::account::{Account, hash, compute_nullifier, is_in_commitment_tree};
 
 /// Private execution logic.
 /// Circuit for proving correct execution of some program with program id

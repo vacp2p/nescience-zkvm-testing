@@ -5,7 +5,7 @@ use outer_methods::{
     OUTER_ELF, OUTER_ID
 };
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
-use toy_example_core::Account;
+use toy_example_core::account::Account;
 
 /// A private execution of the transfer function.
 /// This actually "burns" a sender private account and "mints" two new private accounts:

@@ -1,5 +1,5 @@
 use risc0_zkvm::{guest::env, sha::{Impl, Sha256}, serde::to_vec};
-use toy_example_core::Account;
+use toy_example_core::account::Account;
 
 
 /// A transfer of balance program.
