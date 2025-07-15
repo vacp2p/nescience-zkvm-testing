@@ -1,4 +1,4 @@
-use crate::account::Key;
+use crate::account::{AuthenticationPath, Key};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -6,5 +6,5 @@ pub enum InputVisibiility {
     // A public account
     Public,
     // A private account
-    Private(Option<Key>),
+    Private(Option<(Key, AuthenticationPath)>),
 }

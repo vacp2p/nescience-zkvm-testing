@@ -1,6 +1,6 @@
 use risc0_zkvm::{guest::env, serde::to_vec};
 use toy_example_core::{
-    account::{compute_nullifier, hash, is_in_commitment_tree, Account, Nonce},
+    account::{compute_nullifier, hash, is_in_tree, Account, Nonce},
     input::InputVisibiility,
 };
 
@@ -49,14 +49,14 @@ fn main() {
     let mut nullifiers = Vec::new();
     for (visibility, input_account) in input_visibilities.iter().zip(inputs.iter()) {
         match visibility {
-            InputVisibiility::Private(Some(private_key)) => {
+            InputVisibiility::Private(Some((private_key, auth_path))) => {
                 // Prove ownership of input accounts by proving
                 // knowledge of the pre-image of their addresses.
                 assert_eq!(hash(private_key), input_account.address);
                 // Check the input account was created by a previous transaction
                 // by checking it belongs to the commitments tree.
                 let commitment = input_account.commitment();
-                assert!(is_in_commitment_tree(commitment, commitment_tree_root));
+                assert!(is_in_tree(commitment, auth_path, commitment_tree_root));
                 // Compute nullifier to nullify this private input account.
                 let nullifier = compute_nullifier(&commitment, private_key);
                 nullifiers.push(nullifier);

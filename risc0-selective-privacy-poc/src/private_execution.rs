@@ -1,13 +1,12 @@
 use outer_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
+use sparse_merkle_tree::SparseMerkleTree;
 use toy_example_core::{
-    account::{Account, Address, Commitment, Nonce, Nullifier},
+    account::{bytes_to_words, Account, Address, Commitment, Nonce, Nullifier},
     input::InputVisibiility,
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
-
-const COMMITMENT_TREE_ROOT: [u32; 8] = [0xdd, 0xee, 0xaa, 0xdd, 0xbb, 0xee, 0xee, 0xff];
 
 pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
@@ -32,6 +31,9 @@ fn run_private_execution_of_transfer_program() {
         account.balance = 150;
         account
     };
+    let commitment_tree = SparseMerkleTree::new([sender.commitment()].into_iter().collect());
+    let root = bytes_to_words(commitment_tree.root());
+    let auth_path = commitment_tree.get_authentication_path_for_value(sender.commitment());
 
     let balance_to_move: u128 = 3;
 
@@ -44,7 +46,7 @@ fn run_private_execution_of_transfer_program() {
     let (inner_receipt, inputs_outputs) = prove_inner(&sender, &receiver, balance_to_move);
 
     let visibilities = vec![
-        InputVisibiility::Private(Some(sender_private_key)),
+        InputVisibiility::Private(Some((sender_private_key, [[0; 8]; 32]))),
         InputVisibiility::Private(None),
     ];
 
@@ -63,7 +65,7 @@ fn run_private_execution_of_transfer_program() {
     env_builder.write(&inputs_outputs).unwrap();
     env_builder.write(&visibilities).unwrap();
     env_builder.write(&output_nonces).unwrap();
-    env_builder.write(&COMMITMENT_TREE_ROOT).unwrap();
+    env_builder.write(&root).unwrap();
     env_builder.write(&TRANSFER_ID).unwrap();
     let env = env_builder.build().unwrap();
 

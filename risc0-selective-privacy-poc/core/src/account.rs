@@ -9,6 +9,7 @@ pub type Nullifier = [u32; 8];
 pub type Address = [u32; 8];
 pub type Nonce = [u32; 8];
 pub type Key = [u32; 8];
+pub type AuthenticationPath = [[u32; 8]; 32];
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Account {
@@ -47,7 +48,11 @@ pub fn hash(bytes: &[u32]) -> [u32; 8] {
 }
 
 /// Dummy implementation
-pub fn is_in_commitment_tree(_commitment: Commitment, _tree_root: [u32; 8]) -> bool {
+pub fn is_in_tree(
+    _commitment: Commitment,
+    _auth_path: &AuthenticationPath,
+    _tree_root: [u32; 8],
+) -> bool {
     true
 }
 
@@ -57,4 +62,12 @@ pub fn compute_nullifier(commitment: &Commitment, private_key: &Key) -> Nullifie
     bytes_to_hash[..1].copy_from_slice(&[*commitment]);
     bytes_to_hash[1..].copy_from_slice(private_key);
     hash(&bytes_to_hash)
+}
+
+pub fn bytes_to_words(bytes: [u8; 32]) -> [u32; 8] {
+    let mut words = [0; 8];
+    for (i, chunk) in bytes.chunks(4).enumerate() {
+        words[i] = u32::from_le_bytes(chunk.try_into().unwrap());
+    }
+    words
 }
