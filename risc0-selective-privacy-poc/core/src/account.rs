@@ -4,6 +4,8 @@ use risc0_zkvm::{
 };
 use serde::{Deserialize, Serialize};
 
+pub type Commitment = u32;
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Account {
     pub address: [u32; 8],
@@ -30,9 +32,9 @@ impl Account {
         }
     }
 
-    /// Returns Hash(Account)
-    pub fn commitment(&self) -> [u32; 8] {
-        hash(&to_vec(&self).unwrap())
+    /// Returns Hash(Account)[0] (only first word for this POC)
+    pub fn commitment(&self) -> Commitment {
+        hash(&to_vec(&self).unwrap())[0]
     }
 }
 
@@ -41,14 +43,14 @@ pub fn hash(bytes: &[u32]) -> [u32; 8] {
 }
 
 /// Dummy implementation
-pub fn is_in_commitment_tree(_commitment: [u32; 8], _tree_root: [u32; 8]) -> bool {
+pub fn is_in_commitment_tree(_commitment: Commitment, _tree_root: [u32; 8]) -> bool {
     true
 }
 
 /// Returns Hash(Commitment || private_key)
-pub fn compute_nullifier(commitment: &[u32; 8], private_key: &[u32; 8]) -> [u32; 8] {
-    let mut bytes_to_hash = [0; 16];
-    bytes_to_hash[..8].copy_from_slice(commitment);
-    bytes_to_hash[8..].copy_from_slice(private_key);
+pub fn compute_nullifier(commitment: &Commitment, private_key: &[u32; 8]) -> [u32; 8] {
+    let mut bytes_to_hash = [0; 9]; // <- 1 word for the commitment, 8 words for the private key
+    bytes_to_hash[..1].copy_from_slice(&[*commitment]);
+    bytes_to_hash[1..].copy_from_slice(private_key);
     hash(&bytes_to_hash)
 }

@@ -1,7 +1,10 @@
 use outer_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
-use toy_example_core::{account::Account, input::InputVisibiility};
+use toy_example_core::{
+    account::{Account, Commitment},
+    input::InputVisibiility,
+};
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
 const COMMITMENT_TREE_ROOT: [u32; 8] = [0xdd, 0xee, 0xaa, 0xdd, 0xbb, 0xee, 0xee, 0xff];
@@ -46,6 +49,8 @@ fn run_private_execution_of_transfer_program() {
     ];
 
     let num_inputs: u32 = inputs_outputs.len() as u32 / 2;
+
+    // Sample fresh random nonces for the outputs of this execution
     let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
     println!("output nonces {output_nonces:?}");
 
@@ -70,7 +75,7 @@ fn run_private_execution_of_transfer_program() {
     // Sanity check
     receipt.verify(OUTER_ID).unwrap();
 
-    let output: (Vec<Account>, Vec<[u32; 8]>, Vec<[u32; 8]>) = receipt.journal.decode().unwrap();
+    let output: (Vec<Account>, Vec<[u32; 8]>, Vec<Commitment>) = receipt.journal.decode().unwrap();
     println!("public_outputs: {:?}", output.0);
     println!("nullifiers: {:?}", output.1);
     println!("commitments: {:?}", output.2);
