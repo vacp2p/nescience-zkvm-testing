@@ -14,12 +14,7 @@ const ONE_HASH: [u8; 32] = [
     195, 133, 165, 215, 204, 226, 60, 119, 133, 69, 154,
 ];
 
-/// Hash a leaf from arbitrary bytes
-fn hash_leaf(data: &[u8]) -> [u8; 32] {
-    Sha256::digest(data).into()
-}
-
-/// Hash two child nodes
+/// Compute parent as the hash of two child nodes
 fn hash_node(left: &[u8; 32], right: &[u8; 32]) -> [u8; 32] {
     let mut hasher = Sha256::new();
     hasher.update(left);
@@ -29,25 +24,31 @@ fn hash_node(left: &[u8; 32], right: &[u8; 32]) -> [u8; 32] {
 
 /// Sparse Merkle Tree with 2^32 leaves
 pub struct SparseMerkleTree {
-    values: HashSet<u32>, // store leaf hashes
+    values: HashSet<u32>,
+    node_map: HashMap<(usize, u32), [u8; 32]>,
 }
 
 impl SparseMerkleTree {
     pub fn new(values: HashSet<u32>) -> Self {
-        Self { values }
+        let node_map = Self::node_map(&values);
+        Self { values, node_map }
     }
 
     pub fn new_empty() -> Self {
-        Self {
-            values: HashSet::new(),
+        Self::new(HashSet::new())
+    }
+
+    pub fn add_value(&mut self, new_value: u32) {
+        if self.values.insert(new_value) {
+            self.node_map = Self::node_map(&self.values);
         }
     }
 
-    fn node_map(&self) -> HashMap<(usize, u32), [u8; 32]> {
+    fn node_map(values: &HashSet<u32>) -> HashMap<(usize, u32), [u8; 32]> {
         let mut nodes: HashMap<(usize, u32), [u8; 32]> = HashMap::new();
 
         // Start from occupied leaves
-        for &leaf_index in &self.values {
+        for &leaf_index in values {
             nodes.insert((TREE_DEPTH, leaf_index), ONE_HASH);
         }
 
@@ -83,20 +84,22 @@ impl SparseMerkleTree {
     }
 
     pub fn root(&self) -> [u8; 32] {
-        let nodes = self.node_map();
-        nodes.get(&(0, 0)).cloned().unwrap_or(DEFAULT_HASHES[0])
+        self.node_map
+            .get(&(0, 0))
+            .cloned()
+            .unwrap_or(DEFAULT_HASHES[0])
     }
 
-    pub fn get_authentication_path_for_index(&self, mut index: u32) -> [[u8; 32]; 32] {
+    pub fn get_authentication_path_for_value(&self, value: u32) -> [[u8; 32]; 32] {
         let mut path = [[0u8; 32]; 32];
 
-        let nodes = self.node_map();
-        let mut current_index = index;
+        let mut current_index = value;
 
         for depth in (0..32).rev() {
             let sibling_index = current_index ^ 1;
 
-            let sibling_hash = nodes
+            let sibling_hash = self
+                .node_map
                 .get(&(depth + 1, sibling_index))
                 .cloned()
                 .unwrap_or(DEFAULT_HASHES[depth]);
@@ -108,15 +111,16 @@ impl SparseMerkleTree {
         path
     }
 
-    pub fn verify_index_set(mut index: u32, path: [[u8; 32]; 32], root: [u8; 32]) -> bool {
+    pub fn verify_value_is_in_set(value: u32, path: [[u8; 32]; 32], root: [u8; 32]) -> bool {
         let mut hash = ONE_HASH;
+        let mut current_index = value;
         for path_value in path.iter() {
-            if index & 1 == 0 {
+            if current_index & 1 == 0 {
                 hash = hash_node(&hash, path_value);
             } else {
                 hash = hash_node(path_value, &hash);
             }
-            index >>= 1;
+            current_index >>= 1;
         }
         root == hash
     }
@@ -187,17 +191,22 @@ mod tests {
     }
 
     #[test]
-    fn test_auth_path_1() {
+    fn test_auth_path() {
         let values: HashSet<u32> = vec![0, 1, 2, 3, 1337].into_iter().collect();
-        let tree = SparseMerkleTree::new(values);
+        let mut tree = SparseMerkleTree::new(values);
         let root = tree.root();
-        let path = tree.get_authentication_path_for_index(0);
-        assert!(SparseMerkleTree::verify_index_set(0, path, root));
-        let path = tree.get_authentication_path_for_index(1);
-        assert!(SparseMerkleTree::verify_index_set(1, path, root));
-        let path = tree.get_authentication_path_for_index(1337);
-        assert!(SparseMerkleTree::verify_index_set(1337, path, root));
-        let path = tree.get_authentication_path_for_index(1338);
-        assert!(!SparseMerkleTree::verify_index_set(1338, path, root));
+        let path = tree.get_authentication_path_for_value(0);
+        assert!(SparseMerkleTree::verify_value_is_in_set(0, path, root));
+        let path = tree.get_authentication_path_for_value(1);
+        assert!(SparseMerkleTree::verify_value_is_in_set(1, path, root));
+        let path = tree.get_authentication_path_for_value(1337);
+        assert!(SparseMerkleTree::verify_value_is_in_set(1337, path, root));
+        let path = tree.get_authentication_path_for_value(1338);
+        assert!(!SparseMerkleTree::verify_value_is_in_set(1338, path, root));
+
+        tree.add_value(1338);
+        let path = tree.get_authentication_path_for_value(1338);
+        let root = tree.root();
+        assert!(SparseMerkleTree::verify_value_is_in_set(1338, path, root));
     }
 }
