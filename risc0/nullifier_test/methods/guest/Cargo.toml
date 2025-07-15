@@ -1,5 +1,5 @@
 [package]
-name = "nullifier_guest"
+name = "guest_nullifier_test"
 version = "0.1.0"
 edition = "2021"
 
