@@ -18,5 +18,5 @@ fn main() {
     sender_post.balance -= balance_to_move;
     receiver_post.balance += balance_to_move;
 
-    env::commit(&(sender, receiver, sender_post, receiver_post));
+    env::commit(&vec![sender, receiver, sender_post, receiver_post]);
 }

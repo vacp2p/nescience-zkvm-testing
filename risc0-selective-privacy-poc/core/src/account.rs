@@ -52,8 +52,3 @@ pub fn compute_nullifier(commitment: &[u32; 8], private_key: &[u32; 8]) -> [u32;
     bytes_to_hash[8..].copy_from_slice(private_key);
     hash(&bytes_to_hash)
 }
-
-/// Dummy implementation
-pub fn new_random_nonce() -> [u32; 8] {
-    [0xcc, 0xaa, 0xff, 0xee, 0xcc, 0xaa, 0xff, 0xff]
-}

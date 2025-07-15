@@ -29,11 +29,21 @@ pub fn run_public_execution_of_transfer_program() {
     let env = env_builder.build().unwrap();
 
     let executor = default_executor();
-    let result: [Account; 4] = executor.execute(env, TRANSFER_ELF).unwrap().journal.decode().unwrap();
-    let [_, _, sender_post, receiver_post] = result;
+    let inputs_outputs: Vec<Account> = executor
+        .execute(env, TRANSFER_ELF)
+        .unwrap()
+        .journal
+        .decode()
+        .unwrap();
 
-    println!("sender_before: {:?}, sender_after: {:?}", sender, sender_post);
-    println!("receiver_before: {:?}, receiver_after: {:?}", receiver, receiver_post);
+    println!(
+        "sender_before: {:?}, sender_after: {:?}",
+        inputs_outputs[0], inputs_outputs[2]
+    );
+    println!(
+        "receiver_before: {:?}, receiver_after: {:?}",
+        inputs_outputs[1], inputs_outputs[3],
+    );
 }
 
 #[cfg(test)]

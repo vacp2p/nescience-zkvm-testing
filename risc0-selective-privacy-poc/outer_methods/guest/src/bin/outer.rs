@@ -1,8 +1,4 @@
-use risc0_zkvm::{
-    guest::env,
-    serde::to_vec,
-    sha::{Impl, Sha256},
-};
+use risc0_zkvm::{guest::env, serde::to_vec};
 use toy_example_core::{
     account::{compute_nullifier, hash, is_in_commitment_tree, Account},
     input::InputVisibiility,
@@ -26,25 +22,32 @@ use toy_example_core::{
 fn main() {
     let num_inputs: u32 = env::read();
     // Read inputs and outputs
-    let mut inputs_outputs = Vec::new();
-    for _ in 0..(2 * num_inputs) {
-        let account: Account = env::read();
-        inputs_outputs.push(account);
-    }
+    let mut inputs_outputs: Vec<Account> = env::read();
+    assert_eq!(inputs_outputs.len() as u32, num_inputs * 2);
 
     // Read visibilities
-    let mut input_visibilities = Vec::new();
-    for _ in 0..num_inputs {
-        let input_visibility: InputVisibiility = env::read();
-        input_visibilities.push(input_visibility);
-    }
+    let input_visibilities: Vec<InputVisibiility> = env::read();
+    assert_eq!(input_visibilities.len() as u32, num_inputs);
+
+    // Read nonces for outputs
+    let output_nonces: Vec<[u32; 8]> = env::read();
+    assert_eq!(output_nonces.len() as u32, num_inputs);
 
     let commitment_tree_root: [u32; 8] = env::read();
     let program_id: [u32; 8] = env::read();
 
-    let inputs = inputs_outputs.iter().take(num_inputs as usize);
+    // Verify pre states and post states of accounts are consistent
+    // with the execution of the `program_id`` program
+    env::verify(program_id, &to_vec(&inputs_outputs).unwrap()).unwrap();
+
+    // Split inputs_outputs into two separate vectors
+    let (inputs, mut outputs) = {
+        let outputs = inputs_outputs.split_off(num_inputs as usize);
+        (inputs_outputs, outputs)
+    };
+
     let mut nullifiers = Vec::new();
-    for (visibility, input_account) in input_visibilities.iter().zip(inputs) {
+    for (visibility, input_account) in input_visibilities.iter().zip(inputs.iter()) {
         match visibility {
             InputVisibiility::Private(Some(private_key)) => {
                 // Prove ownership of input accounts by proving
@@ -55,7 +58,7 @@ fn main() {
                 let commitment = input_account.commitment();
                 assert!(is_in_commitment_tree(commitment, commitment_tree_root));
                 // Compute nullifier to nullify this private input account.
-                let nullifier = compute_nullifier(&commitment, &private_key);
+                let nullifier = compute_nullifier(&commitment, private_key);
                 nullifiers.push(nullifier);
             }
             InputVisibiility::Private(None) => {
@@ -67,22 +70,52 @@ fn main() {
             InputVisibiility::Public => continue,
         }
     }
-    let outputs = inputs_outputs.iter().skip(num_inputs as usize);
-    let output_commitments: Vec<_> = outputs.map(|account| account.commitment()).collect();
 
     // Assert `program_id` program didn't modify address fields
-    for (account_pre, account_post) in inputs_outputs
-        .iter()
-        .take(num_inputs as usize)
-        .zip(inputs_outputs.iter().skip(num_inputs as usize))
-    {
+    for (account_pre, account_post) in inputs.iter().zip(outputs.iter()) {
         assert_eq!(account_pre.address, account_post.address);
     }
 
-    // Verify pre states and post states of accounts are consistent
-    // with the execution of the `program_id`` program
-    env::verify(program_id, &to_vec(&inputs_outputs).unwrap()).unwrap();
+    // Insert new nonces in outputs (including public ones (?!))
+    outputs
+        .iter_mut()
+        .zip(output_nonces)
+        .for_each(|(account, new_nonce)| account.nonce = new_nonce);
+
+    // Compute private outputs commitments
+    let mut private_outputs = Vec::new();
+    for (output, visibility) in outputs.iter().zip(input_visibilities.iter()) {
+        match visibility {
+            InputVisibiility::Public => continue,
+            InputVisibiility::Private(_) => private_outputs.push(output),
+        }
+    }
+
+    // Get the list of public inputs pre states and their post states
+    let mut public_inputs_outputs = Vec::new();
+    for (account, visibility) in inputs
+        .iter()
+        .chain(outputs.iter())
+        .zip(input_visibilities.iter().chain(input_visibilities.iter()))
+    {
+        match visibility {
+            InputVisibiility::Public => {
+                public_inputs_outputs.push(account);
+            }
+            InputVisibiility::Private(_) => continue,
+        }
+    }
+
+    // Compute commitments for every private output
+    let private_output_commitments: Vec<_> = private_outputs
+        .iter()
+        .map(|account| account.commitment())
+        .collect();
 
     // Output nullifier of consumed input accounts and commitments of new output private accounts
-    env::commit(&(nullifiers, output_commitments));
+    env::commit(&(
+        public_inputs_outputs,
+        nullifiers,
+        private_output_commitments,
+    ));
 }

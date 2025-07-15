@@ -5,13 +5,15 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = "2.2"
-toy-example-core = {path = "core"}
-transfer-methods = {path = "transfer_methods"}
-outer-methods = {path = "outer_methods"}
+toy-example-core = { path = "core" }
+transfer-methods = { path = "transfer_methods" }
+outer-methods = { path = "outer_methods" }
 serde = "1.0"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rand = "0.8"
 
 [features]
 cuda = ["risc0-zkvm/cuda"]
 default = []
 prove = ["risc0-zkvm/prove"]
+

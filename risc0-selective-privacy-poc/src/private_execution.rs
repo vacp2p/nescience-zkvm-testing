@@ -1,12 +1,15 @@
 use outer_methods::{OUTER_ELF, OUTER_ID};
+use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
-use toy_example_core::{
-    account::{new_random_nonce, Account},
-    input::InputVisibiility,
-};
+use toy_example_core::{account::Account, input::InputVisibiility};
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
 const COMMITMENT_TREE_ROOT: [u32; 8] = [0xdd, 0xee, 0xaa, 0xdd, 0xbb, 0xee, 0xee, 0xff];
+
+pub fn new_random_nonce() -> [u32; 8] {
+    let mut rng = OsRng;
+    std::array::from_fn(|_| rng.gen())
+}
 
 fn mint_fresh_account(address: [u32; 8]) -> Account {
     let nonce = new_random_nonce();
@@ -35,19 +38,16 @@ fn run_private_execution_of_transfer_program() {
     let receiver = mint_fresh_account(receiver_address);
 
     // Prove inner program and get post state of the accounts
-    let (inner_receipt, outputs) = prove_inner(&sender, &receiver, balance_to_move);
+    let (inner_receipt, inputs_outputs) = prove_inner(&sender, &receiver, balance_to_move);
 
     let visibilities = vec![
         InputVisibiility::Private(Some(sender_private_key)),
         InputVisibiility::Private(None),
     ];
 
-    let inputs_outputs = {
-        let mut vec = vec![sender, receiver];
-        vec.extend_from_slice(&outputs);
-        vec
-    };
     let num_inputs: u32 = inputs_outputs.len() as u32 / 2;
+    let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
+    println!("output nonces {output_nonces:?}");
 
     // Prove outer program.
     // This computes the nullifier for the input account
@@ -57,6 +57,7 @@ fn run_private_execution_of_transfer_program() {
     env_builder.write(&num_inputs).unwrap();
     env_builder.write(&inputs_outputs).unwrap();
     env_builder.write(&visibilities).unwrap();
+    env_builder.write(&output_nonces).unwrap();
     env_builder.write(&COMMITMENT_TREE_ROOT).unwrap();
     env_builder.write(&TRANSFER_ID).unwrap();
     let env = env_builder.build().unwrap();
@@ -69,10 +70,10 @@ fn run_private_execution_of_transfer_program() {
     // Sanity check
     receipt.verify(OUTER_ID).unwrap();
 
-    let output: [[u32; 8]; 3] = receipt.journal.decode().unwrap();
-    println!("nullifier: {:?}", output[0]);
-    println!("commitment_1: {:?}", output[1]);
-    println!("commitment_2: {:?}", output[2]);
+    let output: (Vec<Account>, Vec<[u32; 8]>, Vec<[u32; 8]>) = receipt.journal.decode().unwrap();
+    println!("public_outputs: {:?}", output.0);
+    println!("nullifiers: {:?}", output.1);
+    println!("commitments: {:?}", output.2);
 }
 
 fn prove_inner(
@@ -91,22 +92,22 @@ fn prove_inner(
 
     let receipt = prove_info.receipt;
 
-    let output: [Account; 4] = receipt.journal.decode().unwrap();
-    let [_, _, sender_post, receiver_post] = output;
+    let inputs_outputs: Vec<Account> = receipt.journal.decode().unwrap();
+    assert_eq!(inputs_outputs.len(), 4);
 
     println!(
         "sender_before: {:?}, sender_after: {:?}",
-        sender, sender_post
+        inputs_outputs[0], inputs_outputs[2]
     );
     println!(
         "receiver_before: {:?}, receiver_after: {:?}",
-        receiver, receiver_post
+        inputs_outputs[1], inputs_outputs[3]
     );
 
     // Sanity check
     receipt.verify(TRANSFER_ID).unwrap();
 
-    (receipt, vec![sender_post, receiver_post])
+    (receipt, inputs_outputs)
 }
 
 #[cfg(test)]
