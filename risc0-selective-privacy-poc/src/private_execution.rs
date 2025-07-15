@@ -2,19 +2,19 @@ use outer_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
 use toy_example_core::{
-    account::{Account, Commitment},
+    account::{Account, Address, Commitment, Nonce, Nullifier},
     input::InputVisibiility,
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
 const COMMITMENT_TREE_ROOT: [u32; 8] = [0xdd, 0xee, 0xaa, 0xdd, 0xbb, 0xee, 0xee, 0xff];
 
-pub fn new_random_nonce() -> [u32; 8] {
+pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
     std::array::from_fn(|_| rng.gen())
 }
 
-fn mint_fresh_account(address: [u32; 8]) -> Account {
+fn mint_fresh_account(address: Address) -> Account {
     let nonce = new_random_nonce();
     Account::new(address, nonce)
 }
@@ -25,7 +25,7 @@ fn mint_fresh_account(address: [u32; 8]) -> Account {
 fn run_private_execution_of_transfer_program() {
     // This is supposed to be an existing private account (UTXO) with balance equal to 150.
     // And it is supposed to be a private account of the user running this private execution (hence the access to the private key)
-    let sender_private_key = [0; 8];
+    let sender_private_key = [1, 2, 3, 4, 4, 3, 2, 1];
     let sender = {
         // Creating it now but it's supposed to be already created by other previous transactions.
         let mut account = Account::new_from_private_key(sender_private_key, [1; 8]);
@@ -75,7 +75,7 @@ fn run_private_execution_of_transfer_program() {
     // Sanity check
     receipt.verify(OUTER_ID).unwrap();
 
-    let output: (Vec<Account>, Vec<[u32; 8]>, Vec<Commitment>) = receipt.journal.decode().unwrap();
+    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>) = receipt.journal.decode().unwrap();
     println!("public_outputs: {:?}", output.0);
     println!("nullifiers: {:?}", output.1);
     println!("commitments: {:?}", output.2);

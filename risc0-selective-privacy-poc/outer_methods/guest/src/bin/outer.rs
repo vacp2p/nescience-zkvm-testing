@@ -1,6 +1,6 @@
 use risc0_zkvm::{guest::env, serde::to_vec};
 use toy_example_core::{
-    account::{compute_nullifier, hash, is_in_commitment_tree, Account},
+    account::{compute_nullifier, hash, is_in_commitment_tree, Account, Nonce},
     input::InputVisibiility,
 };
 
@@ -30,7 +30,7 @@ fn main() {
     assert_eq!(input_visibilities.len() as u32, num_inputs);
 
     // Read nonces for outputs
-    let output_nonces: Vec<[u32; 8]> = env::read();
+    let output_nonces: Vec<Nonce> = env::read();
     assert_eq!(output_nonces.len() as u32, num_inputs);
 
     let commitment_tree_root: [u32; 8] = env::read();
