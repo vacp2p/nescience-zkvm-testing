@@ -1,5 +1,7 @@
+mod programs;
+
 use outer_methods::{OUTER_ELF, OUTER_ID};
-use rand::{rngs::OsRng, Rng};
+use programs::TransferProgram;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProveInfo, Receipt};
 use sparse_merkle_tree::SparseMerkleTree;
 use toy_example_core::{
@@ -9,14 +11,7 @@ use toy_example_core::{
     types::{Address, AuthenticationPath, Commitment, Nonce, Nullifier},
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
-
-use crate::program::{execute_and_prove, prove_privacy_execution, Program};
-use crate::TransferProgram;
-
-pub fn new_random_nonce() -> Nonce {
-    let mut rng = OsRng;
-    std::array::from_fn(|_| rng.gen())
-}
+use tuki::program::{prove_privacy_execution, Program};
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];
@@ -26,7 +21,7 @@ fn mint_fresh_account(address: Address) -> Account {
 /// A private execution of the transfer function.
 /// This actually "burns" a sender private account and "mints" two new private accounts:
 /// one for the recipient with the transferred balance, and another owned by the sender with the remaining balance.
-fn run_private_execution_of_transfer_program() {
+fn main() {
     // This is supposed to be an existing private account (UTXO) with balance equal to 150.
     // And it is supposed to be a private account of the user running this private execution (hence the access to the private key)
     let sender_private_key = [1, 2, 3, 4, 4, 3, 2, 1];
@@ -73,14 +68,4 @@ fn run_private_execution_of_transfer_program() {
     println!("public_outputs: {:?}", output.0);
     println!("nullifiers: {:?}", output.1);
     println!("commitments: {:?}", output.2);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_private() {
-        run_private_execution_of_transfer_program();
-    }
 }

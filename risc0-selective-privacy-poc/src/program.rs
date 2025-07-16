@@ -1,13 +1,17 @@
 use outer_methods::OUTER_ELF;
+use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{
     default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, ProveInfo, Receipt,
 };
 use serde::{Deserialize, Serialize};
-use toy_example_core::{account::Account, input::InputVisibiility};
+use toy_example_core::{account::Account, input::InputVisibiility, types::Nonce};
 
-use crate::private_execution::new_random_nonce;
+pub fn new_random_nonce() -> Nonce {
+    let mut rng = OsRng;
+    std::array::from_fn(|_| rng.gen())
+}
 
-pub(crate) trait Program {
+pub trait Program {
     const PROGRAM_ID: [u32; 8];
     const PROGRAM_ELF: &[u8];
     type InstructionData: Serialize + for<'de> Deserialize<'de>;
@@ -45,7 +49,7 @@ pub(crate) fn execute_and_prove<P: Program>(
     Ok((receipt, inputs_outputs))
 }
 
-pub(crate) fn execute<P: Program>(
+pub fn execute<P: Program>(
     input_accounts: &[Account],
     instruction_data: &P::InstructionData,
 ) -> Result<Vec<Account>, ()> {
@@ -64,7 +68,7 @@ pub(crate) fn execute<P: Program>(
     Ok(inputs_outputs)
 }
 
-pub(crate) fn prove_privacy_execution<P: Program>(
+pub fn prove_privacy_execution<P: Program>(
     inputs: &[Account],
     instruction_data: &P::InstructionData,
     visibilities: &[InputVisibiility],
