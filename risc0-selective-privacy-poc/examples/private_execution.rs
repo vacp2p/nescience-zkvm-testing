@@ -11,7 +11,7 @@ use toy_example_core::{
     types::{Address, AuthenticationPath, Commitment, Nonce, Nullifier},
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
-use tuki::program::{prove_privacy_execution, Program};
+use tuki::{prove_privacy_execution, Program};
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];

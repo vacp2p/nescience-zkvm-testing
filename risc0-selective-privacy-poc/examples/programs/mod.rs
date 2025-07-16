@@ -1,5 +1,5 @@
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
-use tuki::program::Program;
+use tuki::Program;
 
 pub struct TransferProgram;
 

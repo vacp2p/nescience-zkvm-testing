@@ -4,7 +4,7 @@ use risc0_zkvm::{default_executor, ExecutorEnv};
 use toy_example_core::account::Account;
 use transfer_methods::TRANSFER_ELF;
 
-use tuki::program::{execute, Program};
+use tuki::{execute, Program};
 
 use crate::programs::TransferProgram;
 
