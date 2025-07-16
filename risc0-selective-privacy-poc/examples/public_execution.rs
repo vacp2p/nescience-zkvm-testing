@@ -1,5 +1,3 @@
-mod programs;
-
 use risc0_zkvm::{default_executor, ExecutorEnv};
 use toy_example_core::account::Account;
 use transfer_methods::TRANSFER_ELF;

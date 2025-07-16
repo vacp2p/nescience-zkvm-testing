@@ -1,4 +1,5 @@
 use outer_methods::OUTER_ELF;
+use program::Program;
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{
     default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, ProveInfo, Receipt,
@@ -12,13 +13,6 @@ pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
     std::array::from_fn(|_| rng.gen())
 }
-
-pub trait Program {
-    const PROGRAM_ID: [u32; 8];
-    const PROGRAM_ELF: &[u8];
-    type InstructionData: Serialize + for<'de> Deserialize<'de>;
-}
-
 pub(crate) fn write_inputs<P: Program>(
     input_accounts: &[Account],
     instruction_data: &P::InstructionData,

@@ -1,6 +1,3 @@
-mod programs;
-
-use nssa;
 use nssa::program::TransferProgram;
 use outer_methods::{OUTER_ELF, OUTER_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv, ProveInfo, Receipt};
