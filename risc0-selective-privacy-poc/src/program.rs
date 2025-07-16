@@ -1,6 +1,11 @@
-use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
+use outer_methods::OUTER_ELF;
+use risc0_zkvm::{
+    default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, ProveInfo, Receipt,
+};
 use serde::{Deserialize, Serialize};
-use toy_example_core::account::Account;
+use toy_example_core::{account::Account, input::InputVisibiility};
+
+use crate::private_execution::new_random_nonce;
 
 pub(crate) trait Program {
     const PROGRAM_ID: [u32; 8];
@@ -57,4 +62,34 @@ pub(crate) fn execute<P: Program>(
     let inputs_outputs: Vec<Account> = session_info.journal.decode().map_err(|_| ())?;
 
     Ok(inputs_outputs)
+}
+
+pub(crate) fn prove_privacy_execution<P: Program>(
+    inputs: &[Account],
+    instruction_data: &P::InstructionData,
+    visibilities: &[InputVisibiility],
+    commitment_tree_root: [u32; 8],
+) -> Result<ProveInfo, ()> {
+    // Prove inner program and get post state of the accounts
+    let num_inputs = inputs.len();
+    let (inner_receipt, inputs_outputs) = execute_and_prove::<P>(inputs, instruction_data)?;
+
+    // Sample fresh random nonces for the outputs of this execution
+    let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
+
+    // Prove outer program.
+    // This computes the nullifiers for the input accounts and commitments for the output accounts.
+    let mut env_builder = ExecutorEnv::builder();
+    env_builder.add_assumption(inner_receipt);
+    env_builder.write(&(num_inputs as u32)).unwrap();
+    env_builder.write(&inputs_outputs).unwrap();
+    env_builder.write(&visibilities).unwrap();
+    env_builder.write(&output_nonces).unwrap();
+    env_builder.write(&commitment_tree_root).unwrap();
+    env_builder.write(&P::PROGRAM_ID).unwrap();
+    let env = env_builder.build().unwrap();
+
+    let prover = default_prover();
+    let prove_info = prover.prove(env, OUTER_ELF).unwrap();
+    Ok(prove_info)
 }

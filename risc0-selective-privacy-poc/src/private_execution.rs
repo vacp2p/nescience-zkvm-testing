@@ -10,7 +10,7 @@ use toy_example_core::{
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
-use crate::program::{execute_and_prove, Program};
+use crate::program::{execute_and_prove, prove_privacy_execution, Program};
 use crate::TransferProgram;
 
 pub fn new_random_nonce() -> Nonce {
@@ -21,36 +21,6 @@ pub fn new_random_nonce() -> Nonce {
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];
     Account::new(address, nonce)
-}
-
-fn prove_privacy_execution<P: Program>(
-    inputs: &[Account],
-    instruction_data: &P::InstructionData,
-    visibilities: &[InputVisibiility],
-    commitment_tree_root: [u32; 8],
-) -> Result<ProveInfo, ()> {
-    // Prove inner program and get post state of the accounts
-    let num_inputs = inputs.len();
-    let (inner_receipt, inputs_outputs) = execute_and_prove::<P>(inputs, instruction_data)?;
-
-    // Sample fresh random nonces for the outputs of this execution
-    let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
-
-    // Prove outer program.
-    // This computes the nullifiers for the input accounts and commitments for the output accounts.
-    let mut env_builder = ExecutorEnv::builder();
-    env_builder.add_assumption(inner_receipt);
-    env_builder.write(&(num_inputs as u32)).unwrap();
-    env_builder.write(&inputs_outputs).unwrap();
-    env_builder.write(&visibilities).unwrap();
-    env_builder.write(&output_nonces).unwrap();
-    env_builder.write(&commitment_tree_root).unwrap();
-    env_builder.write(&TRANSFER_ID).unwrap();
-    let env = env_builder.build().unwrap();
-
-    let prover = default_prover();
-    let prove_info = prover.prove(env, OUTER_ELF).unwrap();
-    Ok(prove_info)
 }
 
 /// A private execution of the transfer function.
