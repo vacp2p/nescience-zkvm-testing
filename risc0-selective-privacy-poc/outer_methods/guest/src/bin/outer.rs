@@ -49,11 +49,9 @@ fn main() {
     for (visibility, input_account) in input_visibilities.iter().zip(inputs.iter()) {
         match visibility {
             InputVisibiility::Private(Some((private_key, auth_path))) => {
-                // Prove ownership of input accounts by proving
-                // knowledge of the pre-image of their addresses.
+                // Prove ownership of input accounts by proving knowledge of the pre-image of their addresses.
                 assert_eq!(hash(private_key), input_account.address);
-                // Check the input account was created by a previous transaction
-                // by checking it belongs to the commitments tree.
+                // Check the input account was created by a previous transaction by checking it belongs to the commitments tree.
                 let commitment = input_account.commitment();
                 assert!(is_in_tree(commitment, auth_path, commitment_tree_root));
                 // Compute nullifier to nullify this private input account.
@@ -61,18 +59,19 @@ fn main() {
                 nullifiers.push(nullifier);
             }
             InputVisibiility::Private(None) => {
-                // Private accounts without a companion private key are
-                // enforced to have default values
+                // Private accounts without a companion private key are enforced to have default values
                 assert_eq!(input_account.balance, 0);
+                assert_eq!(input_account.nonce, [0; 8]);
             }
             // No checks on public accounts
             InputVisibiility::Public => continue,
         }
     }
 
-    // Assert `program_id` program didn't modify address fields
+    // Assert `program_id` program didn't modify address fields or nonces
     for (account_pre, account_post) in inputs.iter().zip(outputs.iter()) {
         assert_eq!(account_pre.address, account_post.address);
+        assert_eq!(account_pre.nonce, account_post.nonce);
     }
 
     // Insert new nonces in outputs (including public ones (?!))

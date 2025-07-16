@@ -10,13 +10,16 @@ use toy_example_core::{
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
+use crate::program::Program;
+use crate::TransferProgram;
+
 pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
     std::array::from_fn(|_| rng.gen())
 }
 
 fn mint_fresh_account(address: Address) -> Account {
-    let nonce = new_random_nonce();
+    let nonce = [0; 8];
     Account::new(address, nonce)
 }
 
@@ -45,13 +48,13 @@ fn run_private_execution_of_transfer_program() {
 
     let balance_to_move: u128 = 3;
 
-    // This is the new private account (UTXO) being minted by this private execution.
-    // (The `receiver_address` would be <Npk> in UTXO's terminology)
+    // This is the new private account (UTXO) being minted by this private execution. (The `receiver_address` would be <Npk> in UTXO's terminology)
     let receiver_address = [99; 8];
     let receiver = mint_fresh_account(receiver_address);
 
     // Prove inner program and get post state of the accounts
-    let (inner_receipt, inputs_outputs) = prove_inner(&sender, &receiver, balance_to_move);
+    let (inner_receipt, inputs_outputs) =
+        TransferProgram::execute_and_prove(&[sender, receiver], &balance_to_move).unwrap();
 
     let visibilities = vec![
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
@@ -65,8 +68,7 @@ fn run_private_execution_of_transfer_program() {
     println!("output nonces {output_nonces:?}");
 
     // Prove outer program.
-    // This computes the nullifier for the input account
-    // and commitments for the accounts post states.
+    // This computes the nullifier for the input account and commitments for the accounts post states.
     let mut env_builder = ExecutorEnv::builder();
     env_builder.add_assumption(inner_receipt);
     env_builder.write(&num_inputs).unwrap();
@@ -89,40 +91,6 @@ fn run_private_execution_of_transfer_program() {
     println!("public_outputs: {:?}", output.0);
     println!("nullifiers: {:?}", output.1);
     println!("commitments: {:?}", output.2);
-}
-
-fn prove_inner(
-    sender: &Account,
-    receiver: &Account,
-    balance_to_move: u128,
-) -> (Receipt, Vec<Account>) {
-    let mut env_builder = ExecutorEnv::builder();
-    env_builder.write(&sender).unwrap();
-    env_builder.write(&receiver).unwrap();
-    env_builder.write(&balance_to_move).unwrap();
-    let env = env_builder.build().unwrap();
-
-    let prover = default_prover();
-    let prove_info = prover.prove(env, TRANSFER_ELF).unwrap();
-
-    let receipt = prove_info.receipt;
-
-    let inputs_outputs: Vec<Account> = receipt.journal.decode().unwrap();
-    assert_eq!(inputs_outputs.len(), 4);
-
-    println!(
-        "sender_before: {:?}, sender_after: {:?}",
-        inputs_outputs[0], inputs_outputs[2]
-    );
-    println!(
-        "receiver_before: {:?}, receiver_after: {:?}",
-        inputs_outputs[1], inputs_outputs[3]
-    );
-
-    // Sanity check
-    receipt.verify(TRANSFER_ID).unwrap();
-
-    (receipt, inputs_outputs)
 }
 
 #[cfg(test)]
