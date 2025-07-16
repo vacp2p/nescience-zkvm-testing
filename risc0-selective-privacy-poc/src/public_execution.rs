@@ -2,7 +2,10 @@ use risc0_zkvm::{default_executor, ExecutorEnv};
 use toy_example_core::account::Account;
 use transfer_methods::TRANSFER_ELF;
 
-use crate::{program::Program, TransferProgram};
+use crate::{
+    program::{execute, Program},
+    TransferProgram,
+};
 
 /// A public execution.
 /// This would be executed by the runtime after checking that
@@ -24,7 +27,7 @@ pub fn run_public_execution_of_transfer_program() {
 
     let balance_to_move: u128 = 3;
 
-    let inputs_outputs = TransferProgram::execute(&[sender, receiver], &balance_to_move).unwrap();
+    let inputs_outputs = execute::<TransferProgram>(&[sender, receiver], &balance_to_move).unwrap();
 
     println!(
         "sender_before: {:?}, sender_after: {:?}",
