@@ -3,8 +3,10 @@ use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_prover, ExecutorEnv, Receipt};
 use sparse_merkle_tree::SparseMerkleTree;
 use toy_example_core::{
-    account::{bytes_to_words, Account, Address, AuthenticationPath, Commitment, Nonce, Nullifier},
+    account::Account,
+    bytes_to_words,
     input::InputVisibiility,
+    types::{Address, AuthenticationPath, Commitment, Nonce, Nullifier},
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 

@@ -1,8 +1,8 @@
+mod default_hashes;
+
+use default_hashes::DEFAULT_HASHES;
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
-
-mod default_hashes;
-use default_hashes::DEFAULT_HASHES;
 
 const TREE_DEPTH: usize = 32;
 const ZERO_HASH: [u8; 32] = [

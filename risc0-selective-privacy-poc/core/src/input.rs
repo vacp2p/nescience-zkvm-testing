@@ -1,5 +1,5 @@
-use crate::account::{AuthenticationPath, Key};
 use serde::{Deserialize, Serialize};
+use crate::types::{AuthenticationPath, Key};
 
 #[derive(Serialize, Deserialize)]
 pub enum InputVisibiility {

@@ -1,7 +1,6 @@
 use risc0_zkvm::{guest::env, serde::to_vec};
 use toy_example_core::{
-    account::{compute_nullifier, hash, is_in_tree, Account, Nonce},
-    input::InputVisibiility,
+    account::Account, compute_nullifier, hash, input::InputVisibiility, is_in_tree, types::Nonce,
 };
 
 /// Private execution logic.
