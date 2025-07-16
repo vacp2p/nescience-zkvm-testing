@@ -4,9 +4,9 @@ use risc0_zkvm::{default_executor, ExecutorEnv};
 use toy_example_core::account::Account;
 use transfer_methods::TRANSFER_ELF;
 
-use tuki::{execute, Program};
+use nssa;
 
-use crate::programs::TransferProgram;
+use nssa::program::TransferProgram;
 
 /// A public execution.
 /// This would be executed by the runtime after checking that
@@ -28,7 +28,8 @@ pub fn main() {
 
     let balance_to_move: u128 = 3;
 
-    let inputs_outputs = execute::<TransferProgram>(&[sender, receiver], &balance_to_move).unwrap();
+    let inputs_outputs =
+        nssa::execute::<TransferProgram>(&[sender, receiver], &balance_to_move).unwrap();
 
     println!(
         "sender_before: {:?}, sender_after: {:?}",

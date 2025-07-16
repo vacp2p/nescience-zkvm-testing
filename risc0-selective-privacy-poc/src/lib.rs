@@ -6,6 +6,8 @@ use risc0_zkvm::{
 use serde::{Deserialize, Serialize};
 use toy_example_core::{account::Account, input::InputVisibiility, types::Nonce};
 
+pub mod program;
+
 pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
     std::array::from_fn(|_| rng.gen())

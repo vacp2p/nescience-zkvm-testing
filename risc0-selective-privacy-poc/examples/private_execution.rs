@@ -1,7 +1,8 @@
 mod programs;
 
+use nssa;
+use nssa::program::TransferProgram;
 use outer_methods::{OUTER_ELF, OUTER_ID};
-use programs::TransferProgram;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProveInfo, Receipt};
 use sparse_merkle_tree::SparseMerkleTree;
 use toy_example_core::{
@@ -11,7 +12,6 @@ use toy_example_core::{
     types::{Address, AuthenticationPath, Commitment, Nonce, Nullifier},
 };
 use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
-use tuki::{prove_privacy_execution, Program};
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];
@@ -51,7 +51,7 @@ fn main() {
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
         InputVisibiility::Private(None),
     ];
-    let prove_info = prove_privacy_execution::<TransferProgram>(
+    let prove_info = nssa::prove_privacy_execution::<TransferProgram>(
         &[sender, receiver],
         &balance_to_move,
         &visibilities,
