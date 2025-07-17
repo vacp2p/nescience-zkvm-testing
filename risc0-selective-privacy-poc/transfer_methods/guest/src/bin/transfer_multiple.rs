@@ -1,9 +1,5 @@
 use core::account::Account;
-use risc0_zkvm::{
-    guest::env,
-    serde::to_vec,
-    sha::{Impl, Sha256},
-};
+use risc0_zkvm::guest::env;
 
 /// A transfer of balance program with multiple recipients.
 /// To be used both in public and private contexts.
