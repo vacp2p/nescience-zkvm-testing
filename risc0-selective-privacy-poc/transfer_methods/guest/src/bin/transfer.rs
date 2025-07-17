@@ -8,9 +8,11 @@ use risc0_zkvm::{
 /// A transfer of balance program.
 /// To be used both in public and private contexts.
 fn main() {
-    let sender: Account = env::read();
-    let receiver: Account = env::read();
+    let mut input_accounts: Vec<Account> = env::read();
     let balance_to_move: u128 = env::read();
+
+    assert_eq!(input_accounts.len(), 2);
+    let [sender, receiver] = input_accounts.try_into().unwrap();
 
     // Check sender has enough balance
     assert!(sender.balance >= balance_to_move);

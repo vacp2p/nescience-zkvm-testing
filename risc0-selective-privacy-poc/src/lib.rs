@@ -20,9 +20,8 @@ fn write_inputs<P: Program>(
     instruction_data: &P::InstructionData,
     env_builder: &mut ExecutorEnvBuilder,
 ) -> Result<(), ()> {
-    for account in input_accounts {
-        env_builder.write(&account).map_err(|_| ())?;
-    }
+    let input_accounts = input_accounts.to_vec();
+    env_builder.write(&input_accounts).map_err(|_| ())?;
     env_builder.write(&instruction_data).map_err(|_| ())?;
     Ok(())
 }
