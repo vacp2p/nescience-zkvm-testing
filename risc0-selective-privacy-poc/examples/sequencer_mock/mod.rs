@@ -114,7 +114,7 @@ impl MockedSequencer {
         // Add nullifiers
         self.nullifier_set.extend(nullifiers);
 
-        // Add nullifiers
+        // Add commitments
         for commitment in commitments.iter() {
             self.commitment_tree.add_value(*commitment);
         }
