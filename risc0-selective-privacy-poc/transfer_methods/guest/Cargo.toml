@@ -1,5 +1,5 @@
 [package]
-name = "toy_example"
+name = "transfer"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = { version = "2.2.0", default-features = false, features = ['std'] }
-toy-example-core = {path = "../../core" }
+core = { path = "../../core" }

@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = "2.2"
-toy-example-core = { path = "core" }
+core = { path = "core" }
 transfer-methods = { path = "transfer_methods" }
 outer-methods = { path = "outer_methods" }
 serde = "1.0"

@@ -1,7 +1,7 @@
 use nssa::program::TransferProgram;
 use outer_methods::OUTER_ID;
 use sparse_merkle_tree::SparseMerkleTree;
-use toy_example_core::{
+use core::{
     account::Account,
     bytes_to_words,
     input::InputVisibiility,

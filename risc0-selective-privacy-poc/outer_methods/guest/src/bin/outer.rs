@@ -1,5 +1,5 @@
 use risc0_zkvm::{guest::env, serde::to_vec};
-use toy_example_core::{
+use core::{
     account::Account, compute_nullifier, hash, input::InputVisibiility, is_in_tree, types::Nonce,
 };
 

@@ -1,12 +1,12 @@
-use outer_methods::{OUTER_ELF, OUTER_ID};
-use program::Program;
-use rand::{rngs::OsRng, Rng};
-use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
-use toy_example_core::{
+use core::{
     account::Account,
     input::InputVisibiility,
     types::{Commitment, Nonce, Nullifier},
 };
+use outer_methods::{OUTER_ELF, OUTER_ID};
+use program::Program;
+use rand::{rngs::OsRng, Rng};
+use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
 
 pub mod program;
 

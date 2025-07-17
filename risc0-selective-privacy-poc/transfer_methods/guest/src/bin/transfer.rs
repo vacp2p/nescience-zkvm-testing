@@ -1,6 +1,9 @@
-use risc0_zkvm::{guest::env, sha::{Impl, Sha256}, serde::to_vec};
-use toy_example_core::account::Account;
-
+use core::account::Account;
+use risc0_zkvm::{
+    guest::env,
+    serde::to_vec,
+    sha::{Impl, Sha256},
+};
 
 /// A transfer of balance program.
 /// To be used both in public and private contexts.
