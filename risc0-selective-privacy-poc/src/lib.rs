@@ -3,14 +3,13 @@ use core::{
     input::InputVisibiility,
     types::{Commitment, Nonce, Nullifier},
 };
+use program_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
-use program_methods::{OUTER_ELF, OUTER_ID};
 
 pub mod program;
 
 pub use program::Program;
-
 
 pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
@@ -67,12 +66,12 @@ pub fn execute<P: Program>(
     Ok(inputs_outputs)
 }
 
-pub fn execute_and_prove_privacy_execution<P: Program>(
+pub fn invoke_privacy_execution<P: Program>(
     inputs: &[Account],
     instruction_data: &P::InstructionData,
     visibilities: &[InputVisibiility],
     commitment_tree_root: [u32; 8],
-) -> Result<Receipt, ()> {
+) -> Result<(Receipt, Vec<Nonce>), ()> {
     // Prove inner program and get post state of the accounts
     let num_inputs = inputs.len();
     let (inner_receipt, inputs_outputs) = execute_and_prove_inner::<P>(inputs, instruction_data)?;
@@ -94,7 +93,7 @@ pub fn execute_and_prove_privacy_execution<P: Program>(
 
     let prover = default_prover();
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
-    Ok(prove_info.receipt)
+    Ok((prove_info.receipt, output_nonces))
 }
 
 pub fn verify_privacy_execution(

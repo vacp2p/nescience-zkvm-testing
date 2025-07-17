@@ -51,7 +51,7 @@ fn main() {
         InputVisibiility::Private(None),
     ];
 
-    let receipt = nssa::execute_and_prove_privacy_execution::<TransferMultipleProgram>(
+    let (receipt, _) = nssa::invoke_privacy_execution::<TransferMultipleProgram>(
         &[sender, receiver_1, receiver_2],
         &vec![30, 40],
         &visibilities,

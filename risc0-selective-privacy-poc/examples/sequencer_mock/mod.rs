@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     bytes_to_words,
-    types::{Address, Commitment, Key, Nullifier, ProgramId},
+    types::{Address, AuthenticationPath, Commitment, Key, Nullifier, ProgramId},
 };
 use std::collections::{BTreeMap, HashSet};
 
@@ -17,8 +17,8 @@ pub struct MockedSequencer {
     deployed_program_ids: HashSet<ProgramId>,
 }
 
-const ACCOUNTS_PRIVATE_KEYS: [Key; 3] = [[1; 8], [2; 8], [3; 8]];
-const ACCOUNTS_INITIAL_BALANCES: [u128; 3] = [100, 1337, 0];
+pub const ACCOUNTS_PRIVATE_KEYS: [Key; 3] = [[1; 8], [2; 8], [3; 8]];
+const ACCOUNTS_INITIAL_BALANCES: [u128; 3] = [100, 1337, 37];
 const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID, PINATA_ID];
 
 impl MockedSequencer {
@@ -63,13 +63,13 @@ impl MockedSequencer {
         nullifiers: &[Nullifier],
         commitments: &[Commitment],
     ) -> Result<(), ()> {
-        let commitments_tree_root = bytes_to_words(&self.commitment_tree.root());
+        let commitments_tree_root = self.get_commitment_tree_root();
         if public_inputs_outputs.len() % 2 != 0 {
             return Err(());
         }
 
         let num_input_public = public_inputs_outputs.len() >> 1;
-        for account in public_inputs_outputs.iter() {
+        for account in public_inputs_outputs.iter().take(num_input_public) {
             let current_account = self.get_account(&account.address).ok_or(())?;
             if &current_account != account {
                 return Err(());
@@ -110,6 +110,14 @@ impl MockedSequencer {
                 self.accounts
                     .insert(account_post_state.address, account_post_state);
             });
+
+        // Add nullifiers
+        self.nullifier_set.extend(nullifiers);
+
+        // Add nullifiers
+        for commitment in commitments.iter() {
+            self.commitment_tree.add_value(*commitment);
+        }
 
         Ok(())
     }
@@ -192,8 +200,26 @@ impl MockedSequencer {
         }
         println!("{:-<20}-+-{:-<10}", "", "");
         println!("Commitments: {:?}", self.commitment_tree.values());
-        println!("Nullifiers: {:?}", self.nullifier_set);
+        let formatted: Vec<String> = self.nullifier_set
+            .iter()
+            .map(|arr| format!("0x{:x}", arr[0]))
+            .collect();
+        println!("Nullifiers: [{}]", formatted.join(", "));
         println!("");
         println!("");
+    }
+
+    pub fn get_commitment_tree_root(&self) -> [u32; 8] {
+        bytes_to_words(&self.commitment_tree.root())
+    }
+
+    pub fn get_authentication_path_for(&self, commitment: &Commitment) -> AuthenticationPath {
+        self.commitment_tree
+            .get_authentication_path_for_value(*commitment)
+            .iter()
+            .map(bytes_to_words)
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap()
     }
 }
