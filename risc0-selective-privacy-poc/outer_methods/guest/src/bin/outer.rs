@@ -115,5 +115,6 @@ fn main() {
         public_inputs_outputs,
         nullifiers,
         private_output_commitments,
+        commitment_tree_root,
     ));
 }

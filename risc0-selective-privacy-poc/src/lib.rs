@@ -1,11 +1,12 @@
-use outer_methods::OUTER_ELF;
+use outer_methods::{OUTER_ELF, OUTER_ID};
 use program::Program;
 use rand::{rngs::OsRng, Rng};
-use risc0_zkvm::{
-    default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, ProveInfo, Receipt,
+use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
+use toy_example_core::{
+    account::Account,
+    input::InputVisibiility,
+    types::{Commitment, Nonce, Nullifier},
 };
-use serde::{Deserialize, Serialize};
-use toy_example_core::{account::Account, input::InputVisibiility, types::Nonce};
 
 pub mod program;
 
@@ -13,7 +14,8 @@ pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;
     std::array::from_fn(|_| rng.gen())
 }
-pub(crate) fn write_inputs<P: Program>(
+
+fn write_inputs<P: Program>(
     input_accounts: &[Account],
     instruction_data: &P::InstructionData,
     env_builder: &mut ExecutorEnvBuilder,
@@ -25,7 +27,7 @@ pub(crate) fn write_inputs<P: Program>(
     Ok(())
 }
 
-pub(crate) fn execute_and_prove<P: Program>(
+fn execute_and_prove<P: Program>(
     input_accounts: &[Account],
     instruction_data: &P::InstructionData,
 ) -> Result<(Receipt, Vec<Account>), ()> {
@@ -69,7 +71,7 @@ pub fn prove_privacy_execution<P: Program>(
     instruction_data: &P::InstructionData,
     visibilities: &[InputVisibiility],
     commitment_tree_root: [u32; 8],
-) -> Result<ProveInfo, ()> {
+) -> Result<Receipt, ()> {
     // Prove inner program and get post state of the accounts
     let num_inputs = inputs.len();
     let (inner_receipt, inputs_outputs) = execute_and_prove::<P>(inputs, instruction_data)?;
@@ -91,5 +93,27 @@ pub fn prove_privacy_execution<P: Program>(
 
     let prover = default_prover();
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
-    Ok(prove_info)
+    Ok(prove_info.receipt)
+}
+
+pub fn verify_privacy_execution(
+    receipt: Receipt,
+    public_accounts_inputs_outputs: &[Account],
+    nullifiers: &[Nullifier],
+    private_output_commitments: &[Commitment],
+    commitment_tree_root: &[u32; 8],
+) -> Result<(), ()> {
+    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
+        receipt.journal.decode().unwrap();
+    let expected_output = (
+        public_accounts_inputs_outputs.to_vec(),
+        nullifiers.to_vec(),
+        private_output_commitments.to_vec(),
+        commitment_tree_root.to_owned(),
+    );
+    if output != expected_output {
+        return Err(());
+    } else {
+        receipt.verify(OUTER_ID).map_err(|_| ())
+    }
 }

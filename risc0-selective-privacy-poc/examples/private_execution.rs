@@ -1,14 +1,12 @@
 use nssa::program::TransferProgram;
-use outer_methods::{OUTER_ELF, OUTER_ID};
-use risc0_zkvm::{default_prover, ExecutorEnv, ProveInfo, Receipt};
+use outer_methods::OUTER_ID;
 use sparse_merkle_tree::SparseMerkleTree;
 use toy_example_core::{
     account::Account,
     bytes_to_words,
     input::InputVisibiility,
-    types::{Address, AuthenticationPath, Commitment, Nonce, Nullifier},
+    types::{Address, AuthenticationPath, Commitment, Nullifier},
 };
-use transfer_methods::{TRANSFER_ELF, TRANSFER_ID};
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];
@@ -48,7 +46,7 @@ fn main() {
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
         InputVisibiility::Private(None),
     ];
-    let prove_info = nssa::prove_privacy_execution::<TransferProgram>(
+    let receipt = nssa::prove_privacy_execution::<TransferProgram>(
         &[sender, receiver],
         &balance_to_move,
         &visibilities,
@@ -56,13 +54,14 @@ fn main() {
     )
     .unwrap();
 
-    let receipt = prove_info.receipt;
-
-    // Sanity check
-    receipt.verify(OUTER_ID).unwrap();
-
-    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>) = receipt.journal.decode().unwrap();
+    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
+        receipt.journal.decode().unwrap();
     println!("public_outputs: {:?}", output.0);
     println!("nullifiers: {:?}", output.1);
     println!("commitments: {:?}", output.2);
+    println!("commitment_tree_root: {:?}", output.3);
+
+    assert!(
+        nssa::verify_privacy_execution(receipt, &output.0, &output.1, &output.2, &output.3).is_ok()
+    );
 }
