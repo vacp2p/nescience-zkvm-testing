@@ -1,12 +1,12 @@
-use nssa::program::TransferProgram;
-use outer_methods::OUTER_ID;
-use sparse_merkle_tree::SparseMerkleTree;
 use core::{
     account::Account,
     bytes_to_words,
     input::InputVisibiility,
     types::{Address, AuthenticationPath, Commitment, Nullifier},
 };
+use nssa::program::TransferMultipleProgram;
+use outer_methods::OUTER_ID;
+use sparse_merkle_tree::SparseMerkleTree;
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];
@@ -39,17 +39,21 @@ fn main() {
     let balance_to_move: u128 = 3;
 
     // This is the new private account (UTXO) being minted by this private execution. (The `receiver_address` would be <Npk> in UTXO's terminology)
-    let receiver_address = [99; 8];
-    let receiver = mint_fresh_account(receiver_address);
+    let receiver_address_1 = [99; 8];
+    let receiver_1 = mint_fresh_account(receiver_address_1);
+
+    let receiver_address_2 = [100; 8];
+    let receiver_2 = mint_fresh_account(receiver_address_2);
 
     let visibilities = vec![
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
         InputVisibiility::Private(None),
+        InputVisibiility::Private(None),
     ];
 
-    let receipt = nssa::execute_and_prove_privacy_execution::<TransferProgram>(
-        &[sender, receiver],
-        &balance_to_move,
+    let receipt = nssa::execute_and_prove_privacy_execution::<TransferMultipleProgram>(
+        &[sender, receiver_1, receiver_2],
+        &vec![30, 40],
         &visibilities,
         root,
     )
