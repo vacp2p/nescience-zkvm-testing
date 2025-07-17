@@ -27,7 +27,7 @@ fn write_inputs<P: Program>(
     Ok(())
 }
 
-fn execute_and_prove<P: Program>(
+fn execute_and_prove_inner<P: Program>(
     input_accounts: &[Account],
     instruction_data: &P::InstructionData,
 ) -> Result<(Receipt, Vec<Account>), ()> {
@@ -66,7 +66,7 @@ pub fn execute<P: Program>(
     Ok(inputs_outputs)
 }
 
-pub fn prove_privacy_execution<P: Program>(
+pub fn execute_and_prove_privacy_execution<P: Program>(
     inputs: &[Account],
     instruction_data: &P::InstructionData,
     visibilities: &[InputVisibiility],
@@ -74,7 +74,7 @@ pub fn prove_privacy_execution<P: Program>(
 ) -> Result<Receipt, ()> {
     // Prove inner program and get post state of the accounts
     let num_inputs = inputs.len();
-    let (inner_receipt, inputs_outputs) = execute_and_prove::<P>(inputs, instruction_data)?;
+    let (inner_receipt, inputs_outputs) = execute_and_prove_inner::<P>(inputs, instruction_data)?;
 
     // Sample fresh random nonces for the outputs of this execution
     let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();

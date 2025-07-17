@@ -46,7 +46,8 @@ fn main() {
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
         InputVisibiility::Private(None),
     ];
-    let receipt = nssa::prove_privacy_execution::<TransferProgram>(
+
+    let receipt = nssa::execute_and_prove_privacy_execution::<TransferProgram>(
         &[sender, receiver],
         &balance_to_move,
         &visibilities,
