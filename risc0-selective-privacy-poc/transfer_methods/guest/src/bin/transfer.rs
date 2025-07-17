@@ -1,14 +1,10 @@
 use core::account::Account;
-use risc0_zkvm::{
-    guest::env,
-    serde::to_vec,
-    sha::{Impl, Sha256},
-};
+use risc0_zkvm::guest::env;
 
 /// A transfer of balance program.
 /// To be used both in public and private contexts.
 fn main() {
-    let mut input_accounts: Vec<Account> = env::read();
+    let input_accounts: Vec<Account> = env::read();
     let balance_to_move: u128 = env::read();
 
     assert_eq!(input_accounts.len(), 2);
