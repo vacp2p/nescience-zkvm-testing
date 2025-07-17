@@ -5,8 +5,8 @@ use core::{
     types::{Address, AuthenticationPath, Commitment, Nullifier},
 };
 use nssa::program::TransferMultipleProgram;
-use sparse_merkle_tree::SparseMerkleTree;
 use program_methods::OUTER_ID;
+use sparse_merkle_tree::SparseMerkleTree;
 
 fn mint_fresh_account(address: Address) -> Account {
     let nonce = [0; 8];

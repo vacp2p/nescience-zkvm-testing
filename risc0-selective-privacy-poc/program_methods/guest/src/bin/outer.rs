@@ -1,7 +1,11 @@
-use risc0_zkvm::{guest::env, serde::to_vec};
 use core::{
-    account::Account, compute_nullifier, hash, input::InputVisibiility, is_in_tree, types::Nonce,
+    account::Account,
+    compute_nullifier, hash,
+    input::InputVisibiility,
+    is_in_tree,
+    types::{Nonce, ProgramId},
 };
+use risc0_zkvm::{guest::env, serde::to_vec};
 
 /// Private execution logic.
 /// Circuit for proving correct execution of some program with program id
@@ -33,7 +37,7 @@ fn main() {
     assert_eq!(output_nonces.len() as u32, num_inputs);
 
     let commitment_tree_root: [u32; 8] = env::read();
-    let program_id: [u32; 8] = env::read();
+    let program_id: ProgramId = env::read();
 
     // Verify pre states and post states of accounts are consistent
     // with the execution of the `program_id`` program

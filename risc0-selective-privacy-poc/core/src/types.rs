@@ -4,3 +4,4 @@ pub type Address = [u32; 8];
 pub type Nonce = [u32; 8];
 pub type Key = [u32; 8];
 pub type AuthenticationPath = [[u32; 8]; 32];
+pub type ProgramId = [u32; 8];
