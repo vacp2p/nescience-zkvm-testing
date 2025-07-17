@@ -134,7 +134,7 @@ impl MockedSequencer {
             .collect::<Result<_, _>>()?;
 
         // Execute
-        let inputs_outputs = nssa::execute::<P>(&input_accounts, &instruction_data)?;
+        let inputs_outputs = nssa::execute::<P>(&input_accounts, instruction_data)?;
 
         // Consistency checks
         self.inputs_outputs_are_consistent(&input_accounts, &inputs_outputs)?;

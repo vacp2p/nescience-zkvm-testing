@@ -18,7 +18,7 @@ pub fn new_random_nonce() -> Nonce {
 
 fn write_inputs<P: Program>(
     input_accounts: &[Account],
-    instruction_data: &P::InstructionData,
+    instruction_data: P::InstructionData,
     env_builder: &mut ExecutorEnvBuilder,
 ) -> Result<(), ()> {
     let input_accounts = input_accounts.to_vec();
@@ -29,7 +29,7 @@ fn write_inputs<P: Program>(
 
 fn execute_and_prove_inner<P: Program>(
     input_accounts: &[Account],
-    instruction_data: &P::InstructionData,
+    instruction_data: P::InstructionData,
 ) -> Result<(Receipt, Vec<Account>), ()> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
@@ -49,7 +49,7 @@ fn execute_and_prove_inner<P: Program>(
 
 pub fn execute<P: Program>(
     input_accounts: &[Account],
-    instruction_data: &P::InstructionData,
+    instruction_data: P::InstructionData,
 ) -> Result<Vec<Account>, ()> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
@@ -60,7 +60,7 @@ pub fn execute<P: Program>(
     let executor = default_executor();
     let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| ())?;
 
-    // Get proof and (inputs and) outputs
+    // Get (inputs and) outputs
     let inputs_outputs: Vec<Account> = session_info.journal.decode().map_err(|_| ())?;
 
     Ok(inputs_outputs)
@@ -68,7 +68,7 @@ pub fn execute<P: Program>(
 
 pub fn invoke_privacy_execution<P: Program>(
     inputs: &[Account],
-    instruction_data: &P::InstructionData,
+    instruction_data: P::InstructionData,
     visibilities: &[InputVisibiility],
     commitment_tree_root: [u32; 8],
 ) -> Result<(Receipt, Vec<Nonce>), ()> {

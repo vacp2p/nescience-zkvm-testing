@@ -53,7 +53,7 @@ fn main() {
 
     let (receipt, _) = nssa::invoke_privacy_execution::<TransferMultipleProgram>(
         &[sender, receiver_1, receiver_2],
-        &vec![30, 40],
+        vec![30, 40],
         &visibilities,
         root,
     )

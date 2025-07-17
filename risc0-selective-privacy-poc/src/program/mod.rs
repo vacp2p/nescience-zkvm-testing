@@ -29,8 +29,8 @@ impl Program for TransferMultipleProgram {
 
 pub struct PinataProgram;
 impl Program for PinataProgram {
-    const PROGRAM_ID: ProgramId = TRANSFER_MULTIPLE_ID;
-    const PROGRAM_ELF: &[u8] = TRANSFER_MULTIPLE_ELF;
+    const PROGRAM_ID: ProgramId = PINATA_ID;
+    const PROGRAM_ELF: &[u8] = PINATA_ELF;
     /// Preimage of target hash to win price
-    type InstructionData = [u32; 8];
+    type InstructionData = Vec<u32>;
 }

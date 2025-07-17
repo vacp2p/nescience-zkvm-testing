@@ -5,7 +5,7 @@ use core::{
     types::{Address, Commitment, Key, Nullifier},
 };
 
-use nssa::program::TransferProgram;
+use nssa::program::{PinataProgram, TransferProgram};
 use risc0_zkvm::Receipt;
 
 use crate::sequencer_mock::{MockedSequencer, ACCOUNTS_PRIVATE_KEYS};
@@ -52,8 +52,15 @@ fn main() {
         1,
         &mut sequencer,
     );
-
     println!("Balances after deshielded execution");
+    sequencer.print();
+
+    // A public execution of the Pinata program
+    let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
+    sequencer
+        .invoke_public::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
+        .unwrap();
+    println!("Balances after public piñata execution");
     sequencer.print();
 }
 
@@ -77,7 +84,7 @@ fn send_shielded(
     let visibilities = vec![InputVisibiility::Public, InputVisibiility::Private(None)];
     let (receipt, nonces) = nssa::invoke_privacy_execution::<TransferProgram>(
         &[sender_account, receiver_account.clone()],
-        &balance_to_move,
+        balance_to_move,
         &visibilities,
         commitment_tree_root,
     )
@@ -116,7 +123,7 @@ fn send_private(
     ];
     let (receipt, nonces) = nssa::invoke_privacy_execution::<TransferProgram>(
         &[from_account.clone(), receiver_account.clone()],
-        &balance_to_move,
+        balance_to_move,
         &visibilities,
         commitment_tree_root,
     )
@@ -154,7 +161,7 @@ fn send_deshielded(
     ];
     let (receipt, nonces) = nssa::invoke_privacy_execution::<TransferProgram>(
         &[from_account.clone(), to_account],
-        &balance_to_move,
+        balance_to_move,
         &visibilities,
         commitment_tree_root,
     )

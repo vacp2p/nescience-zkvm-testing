@@ -33,7 +33,7 @@ pub fn main() {
 
     let inputs_outputs = nssa::execute::<TransferMultipleProgram>(
         &[sender, receiver_1, receiver_2],
-        &balance_to_move,
+        balance_to_move,
     )
     .unwrap();
 
