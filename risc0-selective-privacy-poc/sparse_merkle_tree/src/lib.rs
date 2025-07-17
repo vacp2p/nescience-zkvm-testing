@@ -111,6 +111,10 @@ impl SparseMerkleTree {
         path
     }
 
+    pub fn values(&self) -> HashSet<u32> {
+        self.values.clone()
+    }
+
     pub fn verify_value_is_in_set(value: u32, path: [[u8; 32]; 32], root: [u8; 32]) -> bool {
         let mut hash = ONE_HASH;
         let mut current_index = value;

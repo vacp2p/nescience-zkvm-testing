@@ -3,12 +3,14 @@ use core::{
     input::InputVisibiility,
     types::{Commitment, Nonce, Nullifier},
 };
-use program::Program;
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
 use program_methods::{OUTER_ELF, OUTER_ID};
 
 pub mod program;
+
+pub use program::Program;
+
 
 pub fn new_random_nonce() -> Nonce {
     let mut rng = OsRng;

@@ -16,3 +16,4 @@ sparse-merkle-tree = { path = "./sparse_merkle_tree/" }
 cuda = ["risc0-zkvm/cuda"]
 default = []
 prove = ["risc0-zkvm/prove"]
+

@@ -2,26 +2,26 @@ use core::{
     account::Account,
     types::{Address, Key, Nullifier, ProgramId},
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 use nssa;
 use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
 use sparse_merkle_tree::SparseMerkleTree;
 
 pub struct MockedSequencer {
-    accounts: HashMap<Address, Account>,
+    accounts: BTreeMap<Address, Account>,
     commitment_tree: SparseMerkleTree,
     nullifier_set: HashSet<Nullifier>,
     deployed_program_ids: HashSet<ProgramId>,
 }
 
-const ACCOUNTS_PRIVATE_KEYS: [Key; 5] = [[1; 8], [2; 8], [3; 8], [4; 8], [5; 8]];
-const ACCOUNTS_INITIAL_BALANCES: [u128; 5] = [100, 3, 900, 44, 0];
+const ACCOUNTS_PRIVATE_KEYS: [Key; 3] = [[1; 8], [2; 8], [3; 8]];
+const ACCOUNTS_INITIAL_BALANCES: [u128; 3] = [100, 1337, 0];
 const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID, PINATA_ID];
 
 impl MockedSequencer {
     pub fn new() -> Self {
-        let mut accounts: HashMap<Address, Account> = ACCOUNTS_PRIVATE_KEYS
+        let mut accounts: BTreeMap<Address, Account> = ACCOUNTS_PRIVATE_KEYS
             .iter()
             .cloned()
             .zip(ACCOUNTS_INITIAL_BALANCES)
@@ -46,7 +46,7 @@ impl MockedSequencer {
             accounts,
             commitment_tree,
             nullifier_set,
-            deployed_program_ids: DEPLOYED_PROGRAM_IDS.iter().collect(),
+            deployed_program_ids: DEPLOYED_PROGRAM_IDS.iter().cloned().collect(),
         }
     }
 
@@ -54,19 +54,32 @@ impl MockedSequencer {
         self.accounts.get(address).cloned()
     }
 
-    pub fn invoke_program_public<P: nssa::Program>(
+    pub fn invoke_public<P: nssa::Program>(
         &mut self,
-        program_id: ProgramId,
         input_account_addresses: &[Address],
-        instruction_data: &P::InstructionData,
+        instruction_data: P::InstructionData,
     ) -> Result<(), ()> {
+        // Fetch accounts
         let input_accounts: Vec<Account> = input_account_addresses
             .iter()
-            .map(|address| self.get_account(address).ok_or(|_| ())?)
-            .collect();
-        let inputs_outputs = nssa::execute(input_accounts, instruction_data)?;
+            .map(|address| self.get_account(address).ok_or(()))
+            .collect::<Result<_, _>>()?;
 
-        self.inputs_outputs_are_consistent(&input_accounts, &inputs_outputs)?
+        // Execute
+        let inputs_outputs = nssa::execute::<P>(&input_accounts, &instruction_data)?;
+
+        // Consistency checks
+        self.inputs_outputs_are_consistent(&input_accounts, &inputs_outputs)?;
+
+        // Update accounts
+        inputs_outputs
+            .into_iter()
+            .skip(input_accounts.len())
+            .for_each(|account_post_state| {
+                self.accounts
+                    .insert(account_post_state.address, account_post_state);
+            });
+        Ok(())
     }
 
     fn inputs_outputs_are_consistent(
@@ -91,12 +104,36 @@ impl MockedSequencer {
             if account_pre.nonce != account_post.nonce {
                 return Err(());
             }
+            // Redundant with previous checks, but better make it explicit.
+            if !self.accounts.contains_key(&account_post.address) {
+                return Err(());
+            }
         }
-        let accounts_pre_total_balance = input_accounts.iter().map(|account| account.balance).sum();
-        let accounts_post_total_balance = accounts_post.iter().map(|account| account.balance).sum();
+        let accounts_pre_total_balance: u128 =
+            input_accounts.iter().map(|account| account.balance).sum();
+        let accounts_post_total_balance: u128 =
+            accounts_post.iter().map(|account| account.balance).sum();
         if accounts_pre_total_balance != accounts_post_total_balance {
             return Err(());
         }
         return Ok(());
+    }
+
+    pub fn addresses(&self) -> Vec<Address> {
+        self.accounts.keys().cloned().collect()
+    }
+
+    pub fn print(&self) {
+        println!("{:<20} | {:>10}", "Address (first u32)", "Balance");
+        println!("{:-<20}-+-{:-<10}", "", "");
+
+        for account in self.accounts.values() {
+            println!("{:<20x} | {:>10}", account.address[0], account.balance);
+        }
+        println!("{:-<20}-+-{:-<10}", "", "");
+        println!("Commitments: {:?}", self.commitment_tree.values());
+        println!("Nullifiers: {:?}", self.nullifier_set);
+        println!("");
+        println!("");
     }
 }
