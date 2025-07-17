@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use transfer_methods::{PINATA_ELF, PINATA_ID, TRANSFER_ELF, TRANSFER_ID};
-use transfer_multiple_methods::{TRANSFER_MULTIPLE_ELF, TRANSFER_MULTIPLE_ID};
+use program_methods::{
+    PINATA_ELF, PINATA_ID, TRANSFER_ELF, TRANSFER_ID, {TRANSFER_MULTIPLE_ELF, TRANSFER_MULTIPLE_ID},
+};
 
 pub trait Program {
     const PROGRAM_ID: [u32; 8];

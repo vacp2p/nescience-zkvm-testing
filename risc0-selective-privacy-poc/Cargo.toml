@@ -6,9 +6,7 @@ edition = "2021"
 [dependencies]
 risc0-zkvm = "2.2"
 core = { path = "core" }
-transfer-methods = { path = "transfer_methods" }
-transfer-multiple-methods = { path = "transfer_multiple_methods" }
-outer-methods = { path = "outer_methods" }
+program-methods = { path = "program_methods" }
 serde = "1.0"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 rand = "0.8"
