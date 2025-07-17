@@ -1,11 +1,13 @@
 use core::{
     account::Account,
-    types::{Address, Key, Nullifier, ProgramId},
+    bytes_to_words,
+    types::{Address, Commitment, Key, Nullifier, ProgramId},
 };
 use std::collections::{BTreeMap, HashSet};
 
 use nssa;
 use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
+use risc0_zkvm::Receipt;
 use sparse_merkle_tree::SparseMerkleTree;
 
 pub struct MockedSequencer {
@@ -52,6 +54,64 @@ impl MockedSequencer {
 
     pub fn get_account(&self, address: &Address) -> Option<Account> {
         self.accounts.get(address).cloned()
+    }
+
+    pub fn invoke_privacy_execution(
+        &mut self,
+        receipt: Receipt,
+        public_inputs_outputs: &[Account],
+        nullifiers: &[Nullifier],
+        commitments: &[Commitment],
+    ) -> Result<(), ()> {
+        let commitments_tree_root = bytes_to_words(&self.commitment_tree.root());
+        if public_inputs_outputs.len() % 2 != 0 {
+            return Err(());
+        }
+
+        let num_input_public = public_inputs_outputs.len() >> 1;
+        for account in public_inputs_outputs.iter() {
+            let current_account = self.get_account(&account.address).ok_or(())?;
+            if &current_account != account {
+                return Err(());
+            }
+        }
+
+        // Check that nullifiers have not been added before
+        if nullifiers
+            .iter()
+            .any(|nullifier| self.nullifier_set.contains(nullifier))
+        {
+            return Err(());
+        }
+
+        // Check that commitments are new too
+        if commitments
+            .iter()
+            .any(|commitment| self.commitment_tree.values().contains(commitment))
+        {
+            return Err(());
+        }
+
+        // Verify consistency between public accounts, nullifiers and commitments
+        nssa::verify_privacy_execution(
+            receipt,
+            public_inputs_outputs,
+            nullifiers,
+            commitments,
+            &commitments_tree_root,
+        )?;
+
+        // Update accounts
+        public_inputs_outputs
+            .iter()
+            .cloned()
+            .skip(num_input_public)
+            .for_each(|account_post_state| {
+                self.accounts
+                    .insert(account_post_state.address, account_post_state);
+            });
+
+        Ok(())
     }
 
     pub fn invoke_public<P: nssa::Program>(
