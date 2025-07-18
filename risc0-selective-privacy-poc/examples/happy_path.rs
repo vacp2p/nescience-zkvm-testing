@@ -21,11 +21,7 @@ fn main() {
     sequencer.print();
 
     // A public execution of the Transfer Program
-    let sender_addr = addresses[1];
-    let receiver_addr = addresses[2];
-    sequencer
-        .process_public_execution::<TransferProgram>(&[sender_addr, receiver_addr], 10)
-        .unwrap();
+    MockedClient::transfer_public(&addresses[1], &addresses[2], 10, &mut sequencer).unwrap();
     println!("🚀 Balances after transfer");
     sequencer.print();
 
