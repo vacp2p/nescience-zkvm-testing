@@ -2,7 +2,7 @@ use crate::{
     hash,
     types::{Address, Commitment, Key, Nonce},
 };
-use risc0_zkvm::{serde::to_vec, sha::Impl};
+use risc0_zkvm::serde::to_vec;
 use serde::{Deserialize, Serialize};
 
 /// Account to be used both in public and private contexts

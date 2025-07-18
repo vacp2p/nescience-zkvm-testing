@@ -12,7 +12,7 @@ const PINATA_PRIZE: u128 = 100;
 fn main() {
     // Read input accounts.
     // It is expected to receive only two accounts: [pinata_account, winner_account]
-    let mut input_accounts: Vec<Account> = env::read();
+    let input_accounts: Vec<Account> = env::read();
 
     // Read claimed preimage
     let preimage: Vec<u32> = env::read();

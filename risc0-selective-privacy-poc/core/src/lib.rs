@@ -4,7 +4,6 @@ pub mod visibility;
 
 use crate::types::{AuthenticationPath, Commitment, Key, Nullifier};
 use risc0_zkvm::sha::{Impl, Sha256};
-use serde::{Deserialize, Serialize};
 
 pub fn hash(bytes: &[u32]) -> [u32; 8] {
     Impl::hash_words(bytes).as_words().try_into().unwrap()
@@ -12,8 +11,7 @@ pub fn hash(bytes: &[u32]) -> [u32; 8] {
 
 pub fn is_in_tree(commitment: Commitment, path: &AuthenticationPath, root: [u32; 8]) -> bool {
     const HASH_ONE: [u32; 8] = [
-        789771595, 3310634292, 3140410939, 3820475020, 3591004369, 2777006897, 1021496535,
-        2588247415,
+        789771595, 3310634292, 3140410939, 3820475020, 3591004369, 2777006897, 1021496535, 2588247415,
     ];
 
     let mut hash = HASH_ONE;
