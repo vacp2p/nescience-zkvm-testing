@@ -17,11 +17,8 @@ pub struct MockedSequencer {
     accounts: BTreeMap<Address, Account>,
     commitment_tree: SparseMerkleTree,
     nullifier_set: HashSet<Nullifier>,
-    deployed_program_ids: HashSet<ProgramId>,
 }
 
-/// List of deployed programs
-const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID, PINATA_ID];
 /// The initial balance of the genesis accounts
 const INITIAL_BALANCE: u128 = 150;
 /// The address of the piñata program account
@@ -45,7 +42,6 @@ impl MockedSequencer {
             accounts,
             commitment_tree,
             nullifier_set,
-            deployed_program_ids: DEPLOYED_PROGRAM_IDS.iter().cloned().collect(),
         }
     }
 

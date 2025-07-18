@@ -20,7 +20,7 @@ pub fn main() {
     let balance_to_move = vec![10, 20];
 
     let inputs_outputs =
-        nssa::execute::<TransferMultipleProgram>(&[sender, receiver_1, receiver_2], balance_to_move).unwrap();
+        nssa::execute_onchain::<TransferMultipleProgram>(&[sender, receiver_1, receiver_2], balance_to_move).unwrap();
 
     println!("OK!");
 }

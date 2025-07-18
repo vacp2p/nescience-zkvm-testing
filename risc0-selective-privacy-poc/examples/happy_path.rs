@@ -34,7 +34,7 @@ fn main() {
     let [private_account_user_1, private_account_user_2] = USER_CLIENTS[1]
         .transfer_private(private_account_user_1, &addresses[2], 8, &mut sequencer)
         .unwrap();
-    println!("📝 Balances after shielded execution");
+    println!("📝 Balances after private execution");
     print_accounts(&sequencer, &[&private_account_user_1, &private_account_user_2]);
 
     // A deshielded execution of the Transfer Program
@@ -77,7 +77,11 @@ fn main() {
     println!("📝 Balances after private piñata execution");
     print_accounts(
         &sequencer,
-        &[&private_account_user_1, &private_account_user_2, &private_account_user_0],
+        &[
+            &private_account_user_1,
+            &private_account_user_2,
+            &private_account_user_0,
+        ],
     );
 
     println!("Ok!");

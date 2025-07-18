@@ -13,15 +13,11 @@ pub mod transfer_shielded;
 /// A client that creates and submits transfer transactions
 pub struct MockedClient {
     user_private_key: Key,
-    private_accounts: Vec<Account>,
 }
 
 impl MockedClient {
     pub const fn new(user_private_key: Key) -> Self {
-        Self {
-            user_private_key,
-            private_accounts: Vec::new(),
-        }
+        Self { user_private_key }
     }
 
     pub fn user_address(&self) -> Address {
@@ -39,8 +35,7 @@ impl MockedClient {
     ) -> Result<Vec<Account>, ()> {
         // Execute and generate proof of the outer program
         let (receipt, private_outputs) =
-            nssa::invoke_privacy_execution::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root)
-                .unwrap();
+            nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root).unwrap();
 
         // Send proof to the sequencer
         sequencer.process_privacy_execution(receipt)?;

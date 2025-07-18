@@ -16,7 +16,7 @@ impl MockedSequencer {
             .collect::<Result<_, _>>()?;
 
         // Execute the program
-        let inputs_outputs = nssa::execute::<P>(&input_accounts, instruction_data)?;
+        let inputs_outputs = nssa::execute_onchain::<P>(&input_accounts, instruction_data)?;
 
         // Perform consistency checks
         if !self.inputs_outputs_are_consistent(&input_accounts, &inputs_outputs) {

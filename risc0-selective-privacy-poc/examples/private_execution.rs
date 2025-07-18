@@ -51,7 +51,8 @@ fn main() {
     let balance_to_move = vec![30, 40];
 
     // Execute and prove the outer program for the TransferMultipleProgram.
-    let (receipt, _) = nssa::invoke_privacy_execution::<TransferMultipleProgram>(
+    // This is executed off-chain by the sender.
+    let (receipt, _) = nssa::execute_offchain::<TransferMultipleProgram>(
         &[sender, receiver_1, receiver_2],
         balance_to_move,
         &visibilities,

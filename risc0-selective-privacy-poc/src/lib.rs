@@ -50,30 +50,9 @@ fn execute_and_prove_inner<P: Program>(
     Ok((receipt, inputs_outputs))
 }
 
-/// Executes the program `P` without generating a proof.
-/// Returns the list of accounts pre and post states.
-pub fn execute<P: Program>(
-    input_accounts: &[Account],
-    instruction_data: P::InstructionData,
-) -> Result<Vec<Account>, ()> {
-    // Write inputs to the program
-    let mut env_builder = ExecutorEnv::builder();
-    write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
-    let env = env_builder.build().unwrap();
-
-    // Execute the program (without proving)
-    let executor = default_executor();
-    let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| ())?;
-
-    // Get (inputs and) outputs
-    let inputs_outputs: Vec<Account> = session_info.journal.decode().map_err(|_| ())?;
-
-    Ok(inputs_outputs)
-}
-
 /// Builds the private outputs from the results of the execution of an inner program.
 /// Populates the nonces with the ones provided.
-pub fn build_private_outputs_from_inner_results(
+fn build_private_outputs_from_inner_results(
     inputs_outputs: &[Account],
     num_inputs: usize,
     visibilities: &[InputVisibiility],
@@ -93,10 +72,31 @@ pub fn build_private_outputs_from_inner_results(
         .collect()
 }
 
+/// Executes the program `P` without generating a proof.
+/// Returns the list of accounts pre and post states.
+pub fn execute_onchain<P: Program>(
+    input_accounts: &[Account],
+    instruction_data: P::InstructionData,
+) -> Result<Vec<Account>, ()> {
+    // Write inputs to the program
+    let mut env_builder = ExecutorEnv::builder();
+    write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
+    let env = env_builder.build().unwrap();
+
+    // Execute the program (without proving)
+    let executor = default_executor();
+    let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| ())?;
+
+    // Get (inputs and) outputs
+    let inputs_outputs: Vec<Account> = session_info.journal.decode().map_err(|_| ())?;
+
+    Ok(inputs_outputs)
+}
+
 /// Executes and proves the inner program `P` and executes and proves the outer program on top of it.
 /// Returns the proof of execution of the outer program and the list of new private accounts
 /// resulted from this execution.
-pub fn invoke_privacy_execution<P: Program>(
+pub fn execute_offchain<P: Program>(
     inputs: &[Account],
     instruction_data: P::InstructionData,
     visibilities: &[InputVisibiility],
