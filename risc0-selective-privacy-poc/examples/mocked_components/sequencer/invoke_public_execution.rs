@@ -3,7 +3,7 @@ use core::{account::Account, types::Address};
 use super::MockedSequencer;
 
 impl MockedSequencer {
-    pub fn invoke_public<P: nssa::Program>(
+    pub fn invoke_public_execution<P: nssa::Program>(
         &mut self,
         input_account_addresses: &[Address],
         instruction_data: P::InstructionData,

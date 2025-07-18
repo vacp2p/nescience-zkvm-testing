@@ -24,19 +24,19 @@ fn main() {
     let sender_addr = addresses[1];
     let receiver_addr = addresses[2];
     sequencer
-        .invoke_public::<TransferProgram>(&[sender_addr, receiver_addr], 10)
+        .invoke_public_execution::<TransferProgram>(&[sender_addr, receiver_addr], 10)
         .unwrap();
     println!("2️⃣ 🚀 Balances after transfer");
     sequencer.print();
 
     // A shielded execution of the Transfer Program
     let private_account_2 =
-        MockedClient::send_shielded(&addresses[1], &addresses[2], 15, &mut sequencer);
+        MockedClient::transfer_shielded(&addresses[1], &addresses[2], 15, &mut sequencer);
     println!("Balances after shielded execution");
     sequencer.print();
 
     // A private execution of the Transfer Program
-    let private_account_1 = MockedClient::send_private(
+    let private_account_1 = MockedClient::transfer_private(
         &private_account_2,
         &ACCOUNTS_PRIVATE_KEYS[1], // <-- this is shifted 🫠
         &addresses[3],
@@ -47,7 +47,7 @@ fn main() {
     sequencer.print();
 
     // A deshielded execution of the Transfer Program
-    MockedClient::send_deshielded(
+    MockedClient::transfer_deshielded(
         &private_account_1,
         &ACCOUNTS_PRIVATE_KEYS[0],
         &addresses[0],
@@ -60,7 +60,7 @@ fn main() {
     // A public execution of the Pinata program
     let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
     sequencer
-        .invoke_public::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
+        .invoke_public_execution::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
         .unwrap();
     println!("5️⃣ 🚀 Balances after public piñata execution");
     sequencer.print();
