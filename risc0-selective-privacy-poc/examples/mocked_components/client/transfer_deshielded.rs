@@ -13,7 +13,7 @@ impl MockedClient {
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Account {
+    ) -> Result<Account, ()> {
         // All of this is executed locally by the sender
         let sender_account = sequencer.get_account(&from_address).unwrap();
         let commitment_tree_root = sequencer.get_commitment_tree_root();
@@ -27,9 +27,8 @@ impl MockedClient {
             &visibilities,
             commitment_tree_root,
             sequencer,
-        );
+        )?;
         let [receiver_private_account] = private_outputs.try_into().unwrap();
-        receiver_private_account
+        Ok(receiver_private_account)
     }
-
 }

@@ -22,7 +22,7 @@ impl MockedClient {
         visibilities: &[InputVisibiility],
         commitment_tree_root: [u32; 8],
         sequencer: &mut MockedSequencer,
-    ) -> Vec<Account> {
+    ) -> Result<Vec<Account>, ()> {
         let (receipt, private_outputs) = nssa::invoke_privacy_execution::<P>(
             input_accounts,
             instruction_data,
@@ -31,9 +31,9 @@ impl MockedClient {
         )
         .unwrap();
         // Send to te sequencer
-        sequencer.process_privacy_execution(receipt).unwrap();
+        sequencer.process_privacy_execution(receipt)?;
 
-        private_outputs
+        Ok(private_outputs)
     }
 
     pub fn fresh_account_for_mint(address: Address) -> Account {

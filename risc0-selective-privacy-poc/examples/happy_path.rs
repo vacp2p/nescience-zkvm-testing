@@ -31,7 +31,7 @@ fn main() {
 
     // A shielded execution of the Transfer Program
     let private_account_2 =
-        MockedClient::transfer_shielded(&addresses[1], &addresses[2], 15, &mut sequencer);
+        MockedClient::transfer_shielded(&addresses[1], &addresses[2], 15, &mut sequencer).unwrap();
     println!("Balances after shielded execution");
     sequencer.print();
 
@@ -42,7 +42,8 @@ fn main() {
         &addresses[3],
         8,
         &mut sequencer,
-    );
+    )
+    .unwrap();
     println!("🚀 Balances after shielded execution");
     sequencer.print();
 
@@ -53,7 +54,8 @@ fn main() {
         &addresses[0],
         1,
         &mut sequencer,
-    );
+    )
+    .unwrap();
     println!("🚀 Balances after deshielded execution");
     sequencer.print();
 

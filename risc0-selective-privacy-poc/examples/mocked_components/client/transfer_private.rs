@@ -14,7 +14,7 @@ impl MockedClient {
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> [Account; 2] {
+    ) -> Result<[Account; 2], ()> {
         // All of this is executed locally by the sender
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         let receiver_addr = to_address;
@@ -32,8 +32,8 @@ impl MockedClient {
             &visibilities,
             commitment_tree_root,
             sequencer,
-        );
+        )?;
 
-        private_outputs.try_into().unwrap()
+        Ok(private_outputs.try_into().unwrap())
     }
 }
