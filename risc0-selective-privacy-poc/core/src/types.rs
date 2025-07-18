@@ -1,3 +1,4 @@
+/// For this POC we consider 32-bit commitments
 pub type Commitment = u32;
 pub type Nullifier = [u32; 8];
 pub type Address = [u32; 8];

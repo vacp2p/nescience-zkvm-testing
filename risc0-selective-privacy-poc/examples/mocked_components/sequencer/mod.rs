@@ -20,8 +20,11 @@ pub struct MockedSequencer {
     deployed_program_ids: HashSet<ProgramId>,
 }
 
+/// List of deployed programs
 const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID, PINATA_ID];
+/// The initial balance of the genesis accounts
 const INITIAL_BALANCE: u128 = 150;
+/// The address of the piñata program account
 const PINATA_ADDRESS: Address = [0xcafe; 8];
 
 impl MockedSequencer {
@@ -46,14 +49,17 @@ impl MockedSequencer {
         }
     }
 
+    /// Returns the current state of the account for the given address
     pub fn get_account(&self, address: &Address) -> Option<Account> {
         self.accounts.get(address).cloned()
     }
 
+    /// Returns the root of the commitment tree
     pub fn get_commitment_tree_root(&self) -> [u32; 8] {
         bytes_to_words(&self.commitment_tree.root())
     }
 
+    /// Computes the authentication path for the given commitment
     pub fn get_authentication_path_for(&self, commitment: &Commitment) -> AuthenticationPath {
         self.commitment_tree
             .get_authentication_path_for_value(*commitment)
@@ -64,11 +70,13 @@ impl MockedSequencer {
             .unwrap()
     }
 
+    /// Returns the list of all registered addresses
     pub fn addresses(&self) -> Vec<Address> {
         self.accounts.keys().cloned().collect()
     }
 }
 
+/// Pretty prints the chain's state
 pub fn print_accounts(sequencer: &MockedSequencer, private_accounts: &[&Account]) {
     println!("\n====================== ACCOUNT SNAPSHOT ======================\n");
 
@@ -107,10 +115,7 @@ pub fn print_accounts(sequencer: &MockedSequencer, private_accounts: &[&Account]
     println!("{:-<20}\n", "");
 
     println!(">> Private Accounts:");
-    println!(
-        "{:<20} | {:>10} | {:>10}",
-        "Address (first u32)", "Nonce", "Balance"
-    );
+    println!("{:<20} | {:>10} | {:>10}", "Address (first u32)", "Nonce", "Balance");
     println!("{:-<20}-+-{:-<10}-+-{:-<10}", "", "", "");
 
     for account in private_accounts.iter() {
