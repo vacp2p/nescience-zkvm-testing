@@ -38,20 +38,14 @@ fn main() {
         .transfer_private(private_account_user_1, &addresses[2], 8, &mut sequencer)
         .unwrap();
     println!("📝 Balances after shielded execution");
-    print_accounts(
-        &sequencer,
-        &[&private_account_user_1, &private_account_user_2],
-    );
+    print_accounts(&sequencer, &[&private_account_user_1, &private_account_user_2]);
 
     // A deshielded execution of the Transfer Program
     let private_acount_user_2 = USER_CLIENTS[2]
         .transfer_deshielded(private_account_user_2, &addresses[0], 1, &mut sequencer)
         .unwrap();
     println!("📝 Balances after deshielded execution");
-    print_accounts(
-        &sequencer,
-        &[&private_account_user_1, &private_acount_user_2],
-    );
+    print_accounts(&sequencer, &[&private_account_user_1, &private_acount_user_2]);
 
     // A public execution of the Piñata program
     let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
@@ -59,10 +53,7 @@ fn main() {
         .process_public_execution::<PinataProgram>(&[[0xcafe; 8], addresses[2]], preimage)
         .unwrap();
     println!("📝 Balances after public piñata execution");
-    print_accounts(
-        &sequencer,
-        &[&private_account_user_1, &private_acount_user_2],
-    );
+    print_accounts(&sequencer, &[&private_account_user_1, &private_acount_user_2]);
 
     // A deshielded execution of the Piñata program
     let private_account_user_0 = {
@@ -87,10 +78,8 @@ fn main() {
     println!("📝 Balances after private piñata execution");
     print_accounts(
         &sequencer,
-        &[
-            &private_account_user_1,
-            &private_acount_user_2,
-            &private_account_user_0,
-        ],
+        &[&private_account_user_1, &private_acount_user_2, &private_account_user_0],
     );
+
+    println!("Ok!");
 }

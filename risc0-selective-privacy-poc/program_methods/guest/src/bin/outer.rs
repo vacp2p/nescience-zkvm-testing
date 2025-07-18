@@ -6,21 +6,28 @@ use core::{
 };
 use risc0_zkvm::{guest::env, serde::to_vec};
 
-/// Private execution logic.
-/// Circuit for proving correct execution of some program with program id
-/// equal to `program_id` (last input).
+/// Privacy execution logic.
+/// This is the circuit for proving correct off-chain executions of programs.
+/// It also verifies that the chain's invariants are not violated.
 ///
-/// Currently only supports private execution of a program with two input accounts, one
-/// of which must be a fresh new account (`account_2`) (for example a private transfer function).
+/// Inputs:
+/// - Vec<Account>: The output of the inner program. This is assumed to include the accounts pre and
+///     post-states of the execution of the inner program.
 ///
-/// This circuit checks:
-/// - That accounts pre states and post states are consistent with the execution of the given `program_id`.
-/// - That `account_2` is fresh (meaning, for this toy example, that it has 0 balance).
-/// - That `program_id` execution didn't change addresses of the accounts.
+/// - Vec<InputVisibility>: A vector indicating which accounts are private and which are public.
 ///
-/// Outputs:
-/// - The nullifier for the only existing input account (account_1)
-/// - The commitments for the private accounts post states.
+/// - Vec<Nonce>: The vector of nonces to be used for the output accounts. This is assumed to be
+///     sampled at random by the host program.
+///
+/// - [u32; 8]: The root of the commitment tree. Commitments of used private accounts will be
+///     checked against this to prove that they belong to the tree.
+/// - ProgamId: The ID of the inner program.
+///
+/// Public outputs:
+/// - The vector of accounts' pre and post states for the public accounts.
+/// - The nullifiers of the used private accounts.
+/// - The commitments for the ouput private accounts.
+/// - The commitment tree root used for the authentication path verifications.
 fn main() {
     let num_inputs: u32 = env::read();
     // Read inputs and outputs
@@ -35,11 +42,12 @@ fn main() {
     let output_nonces: Vec<Nonce> = env::read();
     assert_eq!(output_nonces.len() as u32, num_inputs);
 
+    // Read root and program id.
     let commitment_tree_root: [u32; 8] = env::read();
     let program_id: ProgramId = env::read();
 
     // Verify pre states and post states of accounts are consistent
-    // with the execution of the `program_id`` program
+    // with the execution of the `program_id` program
     env::verify(program_id, &to_vec(&inputs_outputs).unwrap()).unwrap();
 
     // Split inputs_outputs into two separate vectors
@@ -57,12 +65,13 @@ fn main() {
                 // Check the input account was created by a previous transaction by checking it belongs to the commitments tree.
                 let commitment = input_account.commitment();
                 assert!(is_in_tree(commitment, auth_path, commitment_tree_root));
-                // Compute nullifier to nullify this private input account.
+                // Compute the nullifier to nullify this private input account.
                 let nullifier = compute_nullifier(&commitment, private_key);
                 nullifiers.push(nullifier);
             }
             InputVisibiility::Private(None) => {
                 // Private accounts without a companion private key are enforced to have default values
+                // Used for executions that need to create a new private account.
                 assert_eq!(input_account.balance, 0);
                 assert_eq!(input_account.nonce, [0; 8]);
             }
@@ -76,6 +85,11 @@ fn main() {
         assert_eq!(account_pre.address, account_post.address);
         assert_eq!(account_pre.nonce, account_post.nonce);
     }
+
+    // Check that the program preserved the total supply
+    let total_balance_pre: u128 = inputs.iter().map(|account| account.balance).sum();
+    let total_balance_post: u128 = outputs.iter().map(|account| account.balance).sum();
+    assert_eq!(total_balance_pre, total_balance_post);
 
     // Insert new nonces in outputs (including public ones (?!))
     outputs
@@ -108,10 +122,7 @@ fn main() {
     }
 
     // Compute commitments for every private output
-    let private_output_commitments: Vec<_> = private_outputs
-        .iter()
-        .map(|account| account.commitment())
-        .collect();
+    let private_output_commitments: Vec<_> = private_outputs.iter().map(|account| account.commitment()).collect();
 
     // Output nullifier of consumed input accounts and commitments of new output private accounts
     env::commit(&(
