@@ -9,13 +9,13 @@ use super::{MockedClient, MockedSequencer};
 impl MockedClient {
     /// A shielded execution of the Transfer program
     pub fn transfer_shielded(
-        from_address: &Address,
+        &self,
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
     ) -> Result<Account, ()> {
         // All of this is executed locally by the sender
-        let sender_account = sequencer.get_account(&from_address).unwrap();
+        let sender_account = sequencer.get_account(&self.user_address()).ok_or(())?;
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         let receiver_addr = to_address;
         let mut receiver_account = Self::fresh_account_for_mint(*receiver_addr);

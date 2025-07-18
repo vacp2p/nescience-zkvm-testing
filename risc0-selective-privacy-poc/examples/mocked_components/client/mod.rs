@@ -13,9 +13,20 @@ pub mod transfer_private;
 pub mod transfer_public;
 pub mod transfer_shielded;
 
-pub struct MockedClient;
+pub struct MockedClient {
+    user_private_key: Key,
+}
 
 impl MockedClient {
+    pub const fn new(user_private_key: Key) -> Self {
+        Self { user_private_key }
+    }
+
+    pub fn user_address(&self) -> Address {
+        let address = Account::address_for_key(&self.user_private_key);
+        address 
+    }
+
     fn prove_and_send_to_sequencer<P: nssa::Program>(
         input_accounts: &[Account],
         instruction_data: P::InstructionData,

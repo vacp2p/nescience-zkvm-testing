@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, HashSet};
 use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
 use sparse_merkle_tree::SparseMerkleTree;
 
-use super::ACCOUNTS_PRIVATE_KEYS;
+use crate::mocked_components::USER_CLIENTS;
 
 pub mod process_privacy_execution;
 pub mod process_public_execution;
@@ -25,12 +25,12 @@ const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID,
 
 impl MockedSequencer {
     pub fn new() -> Self {
-        let mut accounts: BTreeMap<Address, Account> = ACCOUNTS_PRIVATE_KEYS
+        let mut accounts: BTreeMap<Address, Account> = USER_CLIENTS
             .iter()
-            .cloned()
+            .map(|client| client.user_address())
             .zip(ACCOUNTS_INITIAL_BALANCES)
-            .map(|(key, initial_balance)| {
-                let mut this = Account::new_from_private_key(key, [0; 8]);
+            .map(|(address, initial_balance)| {
+                let mut this = Account::new(address, [0; 8]);
                 this.balance = initial_balance;
                 this
             })

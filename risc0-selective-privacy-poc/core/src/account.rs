@@ -1,6 +1,6 @@
 use crate::{
     hash,
-    types::{Address, Commitment, Nonce},
+    types::{Address, Commitment, Key, Nonce},
 };
 use risc0_zkvm::{serde::to_vec, sha::Impl};
 use serde::{Deserialize, Serialize};
@@ -14,9 +14,13 @@ pub struct Account {
 
 impl Account {
     /// Creates a new account with address = hash(private_key) and balance = 0
-    pub fn new_from_private_key(private_key: Address, nonce: Nonce) -> Self {
-        let address = hash(&private_key);
+    pub fn new_from_private_key(private_key: Key, nonce: Nonce) -> Self {
+        let address = Self::address_for_key(&private_key);
         Self::new(address, nonce)
+    }
+
+    pub fn address_for_key(private_key: &Key) -> Address {
+        hash(private_key)
     }
 
     pub fn new(address: Address, nonce: Nonce) -> Self {

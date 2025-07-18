@@ -1,6 +1,12 @@
 use core::types::Key;
 
+use crate::mocked_components::client::MockedClient;
+
 pub mod client;
 pub mod sequencer;
 
-pub const ACCOUNTS_PRIVATE_KEYS: [Key; 3] = [[1; 8], [2; 8], [3; 8]];
+pub const USER_CLIENTS: [MockedClient; 3] = [
+    MockedClient::new([1; 8]),
+    MockedClient::new([2; 8]),
+    MockedClient::new([3; 8]),
+];
