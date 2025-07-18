@@ -8,7 +8,7 @@ use super::{MockedClient, MockedSequencer};
 
 impl MockedClient {
     pub fn transfer_deshielded(
-        from_account: &Account,
+        from_account: Account,
         from_account_pk: &Key,
         to_address: &Address,
         balance_to_move: u128,
@@ -24,20 +24,12 @@ impl MockedClient {
             InputVisibiility::Private(Some((from_account_pk.clone(), sender_commitment_auth_path))),
             InputVisibiility::Public,
         ];
-        let (receipt, nonces) = nssa::invoke_privacy_execution::<TransferProgram>(
-            &[from_account.clone(), to_account],
+        let private_outputs = Self::prove_and_send_to_sequencer::<TransferProgram>(
+            &[from_account, to_account],
             balance_to_move,
             &visibilities,
             commitment_tree_root,
-        )
-        .unwrap();
-
-        let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
-            receipt.journal.decode().unwrap();
-
-        // Send to te sequencer
-        sequencer
-            .invoke_privacy_execution(receipt, &output.0, &output.1, &output.2)
-            .unwrap();
+            sequencer,
+        );
     }
 }

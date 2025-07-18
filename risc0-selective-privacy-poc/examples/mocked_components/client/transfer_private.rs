@@ -9,12 +9,12 @@ use super::{MockedClient, MockedSequencer};
 impl MockedClient {
     /// A private execution of the Transfer program
     pub fn transfer_private(
-        from_account: &Account,
+        from_account: Account,
         from_account_pk: &Key,
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Account {
+    ) -> [Account; 2] {
         // All of this is executed locally by the sender
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         let receiver_addr = to_address;
@@ -25,24 +25,15 @@ impl MockedClient {
             InputVisibiility::Private(Some((from_account_pk.clone(), sender_commitment_auth_path))),
             InputVisibiility::Private(None),
         ];
-        let (receipt, nonces) = nssa::invoke_privacy_execution::<TransferProgram>(
-            &[from_account.clone(), receiver_account.clone()],
+
+        let private_outputs = Self::prove_and_send_to_sequencer::<TransferProgram>(
+            &[from_account, receiver_account],
             balance_to_move,
             &visibilities,
             commitment_tree_root,
-        )
-        .unwrap();
-        let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
-            receipt.journal.decode().unwrap();
+            sequencer,
+        );
 
-        // Send to te sequencer
-        sequencer
-            .invoke_privacy_execution(receipt, &output.0, &output.1, &output.2)
-            .unwrap();
-
-        // Assemble the private account
-        receiver_account.nonce = nonces[1];
-        receiver_account.balance = balance_to_move;
-        receiver_account
+        private_outputs.try_into().unwrap()
     }
 }

@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     input::InputVisibiility,
-    types::{Commitment, Nonce, Nullifier},
+    types::{AuthenticationPath, Commitment, Key, Nonce, Nullifier},
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
@@ -66,12 +66,32 @@ pub fn execute<P: Program>(
     Ok(inputs_outputs)
 }
 
+pub fn extract_private_outputs_from_inner_results(
+    inputs_outputs: &[Account],
+    num_inputs: usize,
+    visibilities: &[InputVisibiility],
+    nonces: &[Nonce],
+) -> Vec<Account> {
+    inputs_outputs
+        .iter()
+        .skip(num_inputs)
+        .zip(visibilities)
+        .zip(nonces)
+        .filter(|((_, visibility), _)| matches!(visibility, InputVisibiility::Private(_)))
+        .map(|((account, _), nonce)| {
+            let mut this = account.clone();
+            this.nonce = *nonce;
+            this
+        })
+        .collect()
+}
+
 pub fn invoke_privacy_execution<P: Program>(
     inputs: &[Account],
     instruction_data: P::InstructionData,
     visibilities: &[InputVisibiility],
     commitment_tree_root: [u32; 8],
-) -> Result<(Receipt, Vec<Nonce>), ()> {
+) -> Result<(Receipt, Vec<Account>), ()> {
     // Prove inner program and get post state of the accounts
     let num_inputs = inputs.len();
     let (inner_receipt, inputs_outputs) = execute_and_prove_inner::<P>(inputs, instruction_data)?;
@@ -93,7 +113,13 @@ pub fn invoke_privacy_execution<P: Program>(
 
     let prover = default_prover();
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
-    Ok((prove_info.receipt, output_nonces))
+    let private_outputs = extract_private_outputs_from_inner_results(
+        &inputs_outputs,
+        num_inputs,
+        &visibilities,
+        &output_nonces,
+    );
+    Ok((prove_info.receipt, private_outputs))
 }
 
 pub fn verify_privacy_execution(

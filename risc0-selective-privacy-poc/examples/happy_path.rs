@@ -17,7 +17,7 @@ fn main() {
     let mut sequencer = MockedSequencer::new();
     let addresses = sequencer.addresses();
     println!("addresses: {:?}", addresses);
-    println!("1️⃣ 🚀 Initial balances");
+    println!("🚀 Initial balances");
     sequencer.print();
 
     // A public execution of the Transfer Program
@@ -26,7 +26,7 @@ fn main() {
     sequencer
         .invoke_public_execution::<TransferProgram>(&[sender_addr, receiver_addr], 10)
         .unwrap();
-    println!("2️⃣ 🚀 Balances after transfer");
+    println!("🚀 Balances after transfer");
     sequencer.print();
 
     // A shielded execution of the Transfer Program
@@ -36,25 +36,25 @@ fn main() {
     sequencer.print();
 
     // A private execution of the Transfer Program
-    let private_account_1 = MockedClient::transfer_private(
-        &private_account_2,
+    let [_, private_account_1] = MockedClient::transfer_private(
+        private_account_2,
         &ACCOUNTS_PRIVATE_KEYS[1], // <-- this is shifted 🫠
         &addresses[3],
         8,
         &mut sequencer,
     );
-    println!("3️⃣ 🚀 Balances after shielded execution");
+    println!("🚀 Balances after shielded execution");
     sequencer.print();
 
     // A deshielded execution of the Transfer Program
     MockedClient::transfer_deshielded(
-        &private_account_1,
+        private_account_1,
         &ACCOUNTS_PRIVATE_KEYS[0],
         &addresses[0],
         1,
         &mut sequencer,
     );
-    println!("4️⃣ 🚀 Balances after deshielded execution");
+    println!("🚀 Balances after deshielded execution");
     sequencer.print();
 
     // A public execution of the Pinata program
@@ -62,6 +62,6 @@ fn main() {
     sequencer
         .invoke_public_execution::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
         .unwrap();
-    println!("5️⃣ 🚀 Balances after public piñata execution");
+    println!("🚀 Balances after public piñata execution");
     sequencer.print();
 }

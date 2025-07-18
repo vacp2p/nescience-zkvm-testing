@@ -5,9 +5,7 @@ use core::{
 };
 use std::collections::{BTreeMap, HashSet};
 
-use nssa;
 use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
-use risc0_zkvm::Receipt;
 use sparse_merkle_tree::SparseMerkleTree;
 
 use super::ACCOUNTS_PRIVATE_KEYS;
