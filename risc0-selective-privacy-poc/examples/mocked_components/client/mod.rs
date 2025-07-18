@@ -30,13 +30,8 @@ impl MockedClient {
             commitment_tree_root,
         )
         .unwrap();
-        let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
-            receipt.journal.decode().unwrap();
-
         // Send to te sequencer
-        sequencer
-            .process_privacy_execution(receipt, &output.0, &output.1, &output.2)
-            .unwrap();
+        sequencer.process_privacy_execution(receipt).unwrap();
 
         private_outputs
     }
