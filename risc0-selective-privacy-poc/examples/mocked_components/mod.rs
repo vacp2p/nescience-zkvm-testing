@@ -1,3 +1,5 @@
+use core::types::Key;
+
 pub mod client;
 pub mod sequencer;
 

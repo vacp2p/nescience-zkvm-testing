@@ -8,8 +8,8 @@ use core::{
 use nssa::program::{PinataProgram, TransferProgram};
 use risc0_zkvm::Receipt;
 
-use crate::mocked_components::client::MockedClient;
-use crate::mocked_components::sequencer::{MockedSequencer, ACCOUNTS_PRIVATE_KEYS};
+use crate::mocked_components::sequencer::MockedSequencer;
+use crate::mocked_components::{client::MockedClient, ACCOUNTS_PRIVATE_KEYS};
 
 mod mocked_components;
 

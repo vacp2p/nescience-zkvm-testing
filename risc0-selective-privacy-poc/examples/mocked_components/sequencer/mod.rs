@@ -10,7 +10,7 @@ use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
 use risc0_zkvm::Receipt;
 use sparse_merkle_tree::SparseMerkleTree;
 
-use crate::mocked_components::ACCOUNTS_PRIVATE_KEYS;
+use super::ACCOUNTS_PRIVATE_KEYS;
 
 pub mod invoke_privacy_execution;
 pub mod invoke_public_execution;
