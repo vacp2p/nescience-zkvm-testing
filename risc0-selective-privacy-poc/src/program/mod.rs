@@ -1,7 +1,7 @@
 use core::types::ProgramId;
 
 use program_methods::{
-    PINATA_ELF, PINATA_ID, TRANSFER_ELF, TRANSFER_ID, {TRANSFER_MULTIPLE_ELF, TRANSFER_MULTIPLE_ID},
+    PINATA_ELF, PINATA_ID, TRANSFER_ELF, TRANSFER_ID, TRANSFER_MULTIPLE_ELF, TRANSFER_MULTIPLE_ID,
 };
 use serde::{Deserialize, Serialize};
 
