@@ -1,6 +1,6 @@
 use core::{
     account::Account,
-    types::{AuthenticationPath, Commitment, Key, Nonce, Nullifier},
+    types::{Commitment, Nonce, Nullifier},
     visibility::InputVisibiility,
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
@@ -124,7 +124,7 @@ pub fn invoke_privacy_execution<P: Program>(
 
     // Build private accounts.
     let private_outputs =
-        build_private_outputs_from_inner_results(&inputs_outputs, num_inputs, &visibilities, &output_nonces);
+        build_private_outputs_from_inner_results(&inputs_outputs, num_inputs, visibilities, &output_nonces);
     Ok((prove_info.receipt, private_outputs))
 }
 
@@ -144,7 +144,7 @@ pub fn verify_privacy_execution(
         commitment_tree_root.to_owned(),
     );
     if output != expected_output {
-        return Err(());
+        Err(())
     } else {
         receipt.verify(OUTER_ID).map_err(|_| ())
     }
