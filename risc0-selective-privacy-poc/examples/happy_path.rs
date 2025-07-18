@@ -1,12 +1,10 @@
 use core::{
-    account::Account,
-    bytes_to_words, hash,
-    types::{Address, Commitment, Key, Nullifier},
+    bytes_to_words,
+    types::Address,
     visibility::InputVisibiility,
 };
 
-use nssa::program::{PinataProgram, TransferProgram};
-use risc0_zkvm::Receipt;
+use nssa::program::PinataProgram;
 
 use crate::mocked_components::sequencer::{print_accounts, MockedSequencer};
 use crate::mocked_components::{client::MockedClient, USER_CLIENTS};
@@ -60,7 +58,7 @@ fn main() {
         // All of this is executed locally by the sender
         let receiver_addr = USER_CLIENTS[1].user_address();
         let pinata_account = sequencer.get_account(&[0xcafe; 8]).unwrap();
-        let mut receiver_account = MockedClient::fresh_account_for_mint(receiver_addr);
+        let receiver_account = MockedClient::fresh_account_for_mint(receiver_addr);
         let visibilities = [InputVisibiility::Public, InputVisibiility::Private(None)];
         let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
 

@@ -1,4 +1,3 @@
-use core::types::Key;
 
 use crate::mocked_components::client::MockedClient;
 

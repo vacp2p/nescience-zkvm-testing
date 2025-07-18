@@ -1,5 +1,5 @@
 use core::account::Account;
-use core::types::{Address, Commitment, Key, Nullifier};
+use core::types::Address;
 use core::visibility::InputVisibiility;
 
 use nssa::program::TransferProgram;
@@ -22,7 +22,7 @@ impl MockedClient {
         let sender_commitment_auth_path = sequencer.get_authentication_path_for(&owned_private_account.commitment());
 
         // Create a new default private account for the recipient
-        let mut receiver_account = Self::fresh_account_for_mint(*to_address);
+        let receiver_account = Self::fresh_account_for_mint(*to_address);
 
         // Set visibilities. Both private accounts.
         let visibilities = vec![

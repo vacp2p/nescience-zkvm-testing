@@ -1,5 +1,5 @@
 use core::account::Account;
-use core::types::{Address, Commitment, Key, Nullifier};
+use core::types::Address;
 use core::visibility::InputVisibiility;
 
 use nssa::program::TransferProgram;
@@ -22,7 +22,7 @@ impl MockedClient {
         let from_account = sequencer.get_account(&self.user_address()).ok_or(())?;
 
         // Create a new default private account for the receiver
-        let mut to_account = Self::fresh_account_for_mint(*to_address);
+        let to_account = Self::fresh_account_for_mint(*to_address);
 
         // Set input visibilities
         // First is the public account of the sender. Second is the private account minted in this

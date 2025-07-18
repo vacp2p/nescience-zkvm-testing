@@ -1,5 +1,4 @@
 use core::account::Account;
-use risc0_zkvm::{default_executor, ExecutorEnv};
 
 use nssa;
 

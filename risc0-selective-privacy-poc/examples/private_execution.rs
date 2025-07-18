@@ -5,7 +5,6 @@ use core::{
     visibility::InputVisibiility,
 };
 use nssa::program::TransferMultipleProgram;
-use program_methods::OUTER_ID;
 use sparse_merkle_tree::SparseMerkleTree;
 
 /// A private execution of the TransferMultiple function.

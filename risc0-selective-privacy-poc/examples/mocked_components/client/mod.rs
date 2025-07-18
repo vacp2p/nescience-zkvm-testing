@@ -1,10 +1,9 @@
 use crate::mocked_components::sequencer::MockedSequencer;
 use core::{
     account::Account,
-    types::{Address, Commitment, Key, Nullifier},
+    types::{Address, Key},
     visibility::InputVisibiility,
 };
-use nssa::program::TransferProgram;
 
 pub mod transfer_deshielded;
 pub mod transfer_private;

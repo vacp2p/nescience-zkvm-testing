@@ -1,5 +1,5 @@
 use core::account::Account;
-use core::types::{Address, Commitment, Key, Nullifier};
+use core::types::Address;
 use core::visibility::InputVisibiility;
 
 use nssa::program::TransferProgram;
