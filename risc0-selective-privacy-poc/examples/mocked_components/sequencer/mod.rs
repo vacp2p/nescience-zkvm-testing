@@ -20,28 +20,20 @@ pub struct MockedSequencer {
     deployed_program_ids: HashSet<ProgramId>,
 }
 
-const ACCOUNTS_INITIAL_BALANCES: [u128; 3] = [100, 1337, 37];
 const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID, PINATA_ID];
+const INITIAL_BALANCE: u128 = 150;
+const PINATA_ADDRESS: Address = [0xcafe; 8];
 
 impl MockedSequencer {
     pub fn new() -> Self {
         let mut accounts: BTreeMap<Address, Account> = USER_CLIENTS
             .iter()
             .map(|client| client.user_address())
-            .zip(ACCOUNTS_INITIAL_BALANCES)
-            .map(|(address, initial_balance)| {
-                let mut this = Account::new(address, [0; 8]);
-                this.balance = initial_balance;
-                this
-            })
+            .map(|address| Account::new(address, INITIAL_BALANCE))
             .map(|account| (account.address, account))
             .collect();
 
-        let pinata_account = {
-            let mut this = Account::new([0xcafe; 8], [0; 8]);
-            this.balance = 100;
-            this
-        };
+        let pinata_account = Account::new(PINATA_ADDRESS, INITIAL_BALANCE);
         accounts.insert(pinata_account.address, pinata_account);
 
         let commitment_tree = SparseMerkleTree::new_empty();
@@ -75,23 +67,60 @@ impl MockedSequencer {
     pub fn addresses(&self) -> Vec<Address> {
         self.accounts.keys().cloned().collect()
     }
+}
 
-    pub fn print(&self) {
-        println!("{:<20} | {:>10}", "Address (first u32)", "Balance");
-        println!("{:-<20}-+-{:-<10}", "", "");
+pub fn print_accounts(sequencer: &MockedSequencer, private_accounts: &[&Account]) {
+    println!("\n====================== ACCOUNT SNAPSHOT ======================\n");
 
-        for account in self.accounts.values() {
-            println!("{:<20x} | {:>10}", account.address[0], account.balance);
-        }
-        println!("{:-<20}-+-{:-<10}", "", "");
-        println!("Commitments: {:?}", self.commitment_tree.values());
-        let formatted: Vec<String> = self
-            .nullifier_set
-            .iter()
-            .map(|arr| format!("0x{:x}", arr[0]))
-            .collect();
-        println!("Nullifiers: [{}]", formatted.join(", "));
-        println!("");
-        println!("");
+    println!(">> Public Accounts:");
+    println!("{:<20} | {:>10} |", "Address (first u32)", "Balance");
+    println!("{:-<20}-+-{:-<10}", "", "");
+
+    for account in sequencer.accounts.values() {
+        println!("0x{:<20x} | {:>10} |", account.address[0], account.balance);
     }
+
+    println!("{:-<20}-+-{:-<10}\n", "", "");
+
+    println!(">> Commitments:");
+    println!("{:-<20}", "");
+
+    for commitment in sequencer.commitment_tree.values().iter() {
+        println!("{:<20x}", commitment);
+    }
+
+    println!("{:-<20}\n", "");
+
+    let formatted: Vec<String> = sequencer
+        .nullifier_set
+        .iter()
+        .map(|nullifier| format!("0x{:x}", nullifier[0]))
+        .collect();
+
+    println!(">> Nullifiers (first u32):");
+    println!("{:-<20}", "");
+
+    for entry in formatted {
+        println!("{:<20}", entry);
+    }
+
+    println!("{:-<20}\n", "");
+
+    println!(">> Private Accounts:");
+    println!(
+        "{:<20} | {:>10} | {:>10}",
+        "Address (first u32)", "Nonce", "Balance"
+    );
+    println!("{:-<20}-+-{:-<10}-+-{:-<10}", "", "", "");
+
+    for account in private_accounts.iter() {
+        println!(
+            "{:<20x} | {:>10x}| {:>10} | ",
+            account.address[0], account.nonce[0], account.balance,
+        );
+    }
+
+    println!("{:-<20}-+-{:-<10}-+-{:-<10}", "", "", "");
+
+    println!("\n=============================================================\n");
 }

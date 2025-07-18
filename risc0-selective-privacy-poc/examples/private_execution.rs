@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     bytes_to_words,
-    input::InputVisibiility,
+    visibility::InputVisibiility,
     types::{Address, AuthenticationPath, Commitment, Nullifier},
 };
 use nssa::program::TransferMultipleProgram;
@@ -22,7 +22,7 @@ fn main() {
     let sender_private_key = [1, 2, 3, 4, 4, 3, 2, 1];
     let sender = {
         // Creating it now but it's supposed to be already created by other previous transactions.
-        let mut account = Account::new_from_private_key(sender_private_key, [1; 8]);
+        let mut account = Account::new_from_private_key(sender_private_key);
         account.balance = 150;
         account
     };

@@ -10,24 +10,13 @@ use nssa::program::TransferMultipleProgram;
 /// the initiating transaction includes the sender's signature.
 pub fn main() {
     // Account fetched from the chain state with 150 in its balance.
-    let sender = {
-        let mut account = Account::new([5; 8], [98; 8]);
-        account.balance = 150;
-        account
-    };
+    let sender = Account::new([5; 8], 150);
 
     // Account fetched from the chain state with 900 in its balance.
-    let receiver_1 = {
-        let mut account = Account::new([6; 8], [99; 8]);
-        account.balance = 900;
-        account
-    };
+    let receiver_1 = Account::new([6; 8], 900);
 
-    let receiver_2 = {
-        let mut account = Account::new([6; 8], [99; 8]);
-        account.balance = 500;
-        account
-    };
+    // Account fetched from the chain state with 500 in its balance.
+    let receiver_2 = Account::new([6; 8], 500);
 
     let balance_to_move = vec![10, 20];
 

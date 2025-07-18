@@ -1,5 +1,5 @@
 use core::account::Account;
-use core::input::InputVisibiility;
+use core::visibility::InputVisibiility;
 use core::types::{Address, Commitment, Key, Nullifier};
 
 use nssa::program::TransferProgram;
@@ -10,7 +10,7 @@ impl MockedClient {
     /// A private execution of the Transfer program
     pub fn transfer_private(
         &self,
-        from_account: Account,
+        owned_private_account: Account,
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
@@ -18,9 +18,8 @@ impl MockedClient {
         // All of this is executed locally by the sender
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         let receiver_addr = to_address;
-        // let from_account = sequencer.get_account(&self.user_address()).ok_or(())?;
         let sender_commitment_auth_path =
-            sequencer.get_authentication_path_for(&from_account.commitment());
+            sequencer.get_authentication_path_for(&owned_private_account.commitment());
         let mut receiver_account = Self::fresh_account_for_mint(*receiver_addr);
         let visibilities = vec![
             InputVisibiility::Private(Some((self.user_private_key, sender_commitment_auth_path))),
@@ -28,7 +27,7 @@ impl MockedClient {
         ];
 
         let private_outputs = Self::prove_and_send_to_sequencer::<TransferProgram>(
-            &[from_account, receiver_account],
+            &[owned_private_account, receiver_account],
             balance_to_move,
             &visibilities,
             commitment_tree_root,

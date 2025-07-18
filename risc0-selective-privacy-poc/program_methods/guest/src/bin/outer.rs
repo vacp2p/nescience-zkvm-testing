@@ -1,9 +1,8 @@
 use core::{
     account::Account,
-    compute_nullifier, hash,
-    input::InputVisibiility,
-    is_in_tree,
+    compute_nullifier, hash, is_in_tree,
     types::{Nonce, ProgramId},
+    visibility::InputVisibiility,
 };
 use risc0_zkvm::{guest::env, serde::to_vec};
 

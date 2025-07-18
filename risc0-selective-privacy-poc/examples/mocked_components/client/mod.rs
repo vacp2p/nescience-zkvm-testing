@@ -1,7 +1,7 @@
 use core::{
     account::Account,
-    input::InputVisibiility,
     types::{Address, Commitment, Key, Nullifier},
+    visibility::InputVisibiility,
 };
 
 use nssa::program::TransferProgram;
@@ -15,19 +15,22 @@ pub mod transfer_shielded;
 
 pub struct MockedClient {
     user_private_key: Key,
+    private_accounts: Vec<Account>,
 }
 
 impl MockedClient {
     pub const fn new(user_private_key: Key) -> Self {
-        Self { user_private_key }
+        Self {
+            user_private_key,
+            private_accounts: Vec::new(),
+        }
     }
 
     pub fn user_address(&self) -> Address {
-        let address = Account::address_for_key(&self.user_private_key);
-        address 
+        Account::address_for_key(&self.user_private_key)
     }
 
-    fn prove_and_send_to_sequencer<P: nssa::Program>(
+    pub fn prove_and_send_to_sequencer<P: nssa::Program>(
         input_accounts: &[Account],
         instruction_data: P::InstructionData,
         visibilities: &[InputVisibiility],
@@ -48,7 +51,6 @@ impl MockedClient {
     }
 
     pub fn fresh_account_for_mint(address: Address) -> Account {
-        let nonce = [0; 8];
-        Account::new(address, nonce)
+        Account::new(address, 0)
     }
 }

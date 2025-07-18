@@ -1,7 +1,7 @@
 use core::{
     account::Account,
-    input::InputVisibiility,
     types::{AuthenticationPath, Commitment, Key, Nonce, Nullifier},
+    visibility::InputVisibiility,
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};

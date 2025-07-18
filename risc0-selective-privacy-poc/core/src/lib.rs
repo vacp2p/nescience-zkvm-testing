@@ -1,6 +1,6 @@
 pub mod account;
-pub mod input;
 pub mod types;
+pub mod visibility;
 
 use crate::types::{AuthenticationPath, Commitment, Key, Nullifier};
 use risc0_zkvm::sha::{Impl, Sha256};
