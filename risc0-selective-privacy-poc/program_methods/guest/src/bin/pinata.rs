@@ -10,7 +10,8 @@ const PINATA_PRIZE: u128 = 100;
 /// A Piñata program
 /// To be used both in public and privacy contexts.
 fn main() {
-    // Read input accounts. It is expected to receive only two accounts: [pinata_account, winner_account]
+    // Read input accounts.
+    // It is expected to receive only two accounts: [pinata_account, winner_account]
     let mut input_accounts: Vec<Account> = env::read();
 
     // Read claimed preimage
@@ -18,8 +19,7 @@ fn main() {
 
     // Unpack accounts.
     assert_eq!(input_accounts.len(), 2);
-    let [winner_account] = input_accounts.split_off(1).try_into().unwrap();
-    let [pinata_account] = input_accounts.try_into().unwrap();
+    let [pinata_account, winner_account] = input_accounts.try_into().unwrap();
 
     // Check that the given `pinata_account` is correct
     assert_eq!(pinata_account.address, PINATA_ACCOUNT_ADDR);

@@ -4,6 +4,8 @@ use risc0_zkvm::guest::env;
 /// A transfer of balance program.
 /// To be used both in public and private contexts.
 fn main() {
+    // Read input accounts.
+    // It is expected to receive only two accounts: [sender_account, receiver_account]
     let input_accounts: Vec<Account> = env::read();
     let balance_to_move: u128 = env::read();
 
