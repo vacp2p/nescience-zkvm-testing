@@ -71,7 +71,9 @@ pub fn execute<P: Program>(
     Ok(inputs_outputs)
 }
 
-pub fn extract_private_outputs_from_inner_results(
+/// Builds the private outputs from the results of the execution of an inner program.
+/// Populates the nonces with the ones provided.
+pub fn build_private_outputs_from_inner_results(
     inputs_outputs: &[Account],
     num_inputs: usize,
     visibilities: &[InputVisibiility],
@@ -91,6 +93,9 @@ pub fn extract_private_outputs_from_inner_results(
         .collect()
 }
 
+/// Executes and proves the inner program `P` and executes and proves the outer program on top of it.
+/// Returns the proof of execution of the outer program and the list of new private accounts
+/// resulted from this execution.
 pub fn invoke_privacy_execution<P: Program>(
     inputs: &[Account],
     instruction_data: P::InstructionData,
@@ -105,7 +110,6 @@ pub fn invoke_privacy_execution<P: Program>(
     let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
 
     // Prove outer program.
-    // This computes the nullifiers for the input accounts and commitments for the output accounts.
     let mut env_builder = ExecutorEnv::builder();
     env_builder.add_assumption(inner_receipt);
     env_builder.write(&(num_inputs as u32)).unwrap();
@@ -115,14 +119,16 @@ pub fn invoke_privacy_execution<P: Program>(
     env_builder.write(&commitment_tree_root).unwrap();
     env_builder.write(&P::PROGRAM_ID).unwrap();
     let env = env_builder.build().unwrap();
-
     let prover = default_prover();
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
+
+    // Build private accounts.
     let private_outputs =
-        extract_private_outputs_from_inner_results(&inputs_outputs, num_inputs, &visibilities, &output_nonces);
+        build_private_outputs_from_inner_results(&inputs_outputs, num_inputs, &visibilities, &output_nonces);
     Ok((prove_info.receipt, private_outputs))
 }
 
+/// Verifies a proof of the outer program for the given parameters.
 pub fn verify_privacy_execution(
     receipt: Receipt,
     public_accounts_inputs_outputs: &[Account],
