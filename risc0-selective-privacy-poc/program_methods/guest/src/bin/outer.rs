@@ -80,7 +80,7 @@ fn main() {
         }
     }
 
-    // Assert `program_id` program didn't modify address fields or nonces
+    // Assert that the inner program didn't modify address fields or nonces
     for (account_pre, account_post) in inputs.iter().zip(outputs.iter()) {
         assert_eq!(account_pre.address, account_post.address);
         assert_eq!(account_pre.nonce, account_post.nonce);
@@ -91,13 +91,15 @@ fn main() {
     let total_balance_post: u128 = outputs.iter().map(|account| account.balance).sum();
     assert_eq!(total_balance_pre, total_balance_post);
 
-    // Insert new nonces in outputs (including public ones (?!))
+    // From this point on the execution is considered valid
+    //
+    // Insert new nonces in outputs (including public ones)
     outputs
         .iter_mut()
         .zip(output_nonces)
         .for_each(|(account, new_nonce)| account.nonce = new_nonce);
 
-    // Compute private outputs commitments
+    // Compute commitments for every private output
     let mut private_outputs = Vec::new();
     for (output, visibility) in outputs.iter().zip(input_visibilities.iter()) {
         match visibility {
@@ -105,8 +107,9 @@ fn main() {
             InputVisibiility::Private(_) => private_outputs.push(output),
         }
     }
+    let private_output_commitments: Vec<_> = private_outputs.iter().map(|account| account.commitment()).collect();
 
-    // Get the list of public inputs pre states and their post states
+    // Get the list of public accounts pre and post states
     let mut public_inputs_outputs = Vec::new();
     for (account, visibility) in inputs
         .iter()
@@ -121,10 +124,6 @@ fn main() {
         }
     }
 
-    // Compute commitments for every private output
-    let private_output_commitments: Vec<_> = private_outputs.iter().map(|account| account.commitment()).collect();
-
-    // Output nullifier of consumed input accounts and commitments of new output private accounts
     env::commit(&(
         public_inputs_outputs,
         nullifiers,
