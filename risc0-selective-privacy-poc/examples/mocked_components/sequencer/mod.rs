@@ -10,8 +10,8 @@ use sparse_merkle_tree::SparseMerkleTree;
 
 use super::ACCOUNTS_PRIVATE_KEYS;
 
-pub mod invoke_privacy_execution;
-pub mod invoke_public_execution;
+pub mod process_privacy_execution;
+pub mod process_public_execution;
 
 pub struct MockedSequencer {
     accounts: BTreeMap<Address, Account>,

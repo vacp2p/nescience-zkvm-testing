@@ -24,7 +24,7 @@ fn main() {
     let sender_addr = addresses[1];
     let receiver_addr = addresses[2];
     sequencer
-        .invoke_public_execution::<TransferProgram>(&[sender_addr, receiver_addr], 10)
+        .process_public_execution::<TransferProgram>(&[sender_addr, receiver_addr], 10)
         .unwrap();
     println!("🚀 Balances after transfer");
     sequencer.print();
@@ -60,7 +60,7 @@ fn main() {
     // A public execution of the Pinata program
     let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
     sequencer
-        .invoke_public_execution::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
+        .process_public_execution::<PinataProgram>(&[addresses[0], addresses[3]], preimage)
         .unwrap();
     println!("🚀 Balances after public piñata execution");
     sequencer.print();
