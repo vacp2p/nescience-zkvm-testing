@@ -16,6 +16,7 @@ pub fn new_random_nonce() -> Nonce {
     std::array::from_fn(|_| rng.gen())
 }
 
+/// Writes inputs to `env_builder` in the order expected by the programs
 fn write_inputs<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
@@ -27,6 +28,8 @@ fn write_inputs<P: Program>(
     Ok(())
 }
 
+/// Executes and proves the program `P`.
+/// Returns the proof and the list of accounts pre and post states
 fn execute_and_prove_inner<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
@@ -47,6 +50,8 @@ fn execute_and_prove_inner<P: Program>(
     Ok((receipt, inputs_outputs))
 }
 
+/// Executes the program `P` without generating a proof.
+/// Returns the list of accounts pre and post states.
 pub fn execute<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
@@ -113,12 +118,8 @@ pub fn invoke_privacy_execution<P: Program>(
 
     let prover = default_prover();
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
-    let private_outputs = extract_private_outputs_from_inner_results(
-        &inputs_outputs,
-        num_inputs,
-        &visibilities,
-        &output_nonces,
-    );
+    let private_outputs =
+        extract_private_outputs_from_inner_results(&inputs_outputs, num_inputs, &visibilities, &output_nonces);
     Ok((prove_info.receipt, private_outputs))
 }
 
@@ -129,8 +130,7 @@ pub fn verify_privacy_execution(
     private_output_commitments: &[Commitment],
     commitment_tree_root: &[u32; 8],
 ) -> Result<(), ()> {
-    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
-        receipt.journal.decode().unwrap();
+    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) = receipt.journal.decode().unwrap();
     let expected_output = (
         public_accounts_inputs_outputs.to_vec(),
         nullifiers.to_vec(),

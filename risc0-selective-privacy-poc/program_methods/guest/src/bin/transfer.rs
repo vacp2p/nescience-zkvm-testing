@@ -9,6 +9,7 @@ fn main() {
     let input_accounts: Vec<Account> = env::read();
     let balance_to_move: u128 = env::read();
 
+    // Unpack sender and receiver
     assert_eq!(input_accounts.len(), 2);
     let [sender, receiver] = input_accounts.try_into().unwrap();
 
