@@ -5,7 +5,7 @@ use nssa;
 
 use nssa::program::TransferMultipleProgram;
 
-/// A public execution.
+/// A public execution of the TransferMultipleProgram.
 /// This would be executed by the runtime after checking that
 /// the initiating transaction includes the sender's signature.
 pub fn main() {
@@ -20,22 +20,8 @@ pub fn main() {
 
     let balance_to_move = vec![10, 20];
 
-    let inputs_outputs = nssa::execute::<TransferMultipleProgram>(
-        &[sender, receiver_1, receiver_2],
-        balance_to_move,
-    )
-    .unwrap();
+    let inputs_outputs =
+        nssa::execute::<TransferMultipleProgram>(&[sender, receiver_1, receiver_2], balance_to_move).unwrap();
 
-    println!(
-        "sender_before: {:?}, sender_after: {:?}",
-        inputs_outputs[0], inputs_outputs[3]
-    );
-    println!(
-        "receiver_1_before: {:?}, receiver_1_after: {:?}",
-        inputs_outputs[1], inputs_outputs[4],
-    );
-    println!(
-        "receiver_2_before: {:?}, receiver_2_after: {:?}",
-        inputs_outputs[2], inputs_outputs[5],
-    );
+    println!("OK!");
 }

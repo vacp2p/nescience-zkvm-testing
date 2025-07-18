@@ -1,33 +1,29 @@
 use core::{
     account::Account,
     bytes_to_words,
-    visibility::InputVisibiility,
     types::{Address, AuthenticationPath, Commitment, Nullifier},
+    visibility::InputVisibiility,
 };
 use nssa::program::TransferMultipleProgram;
 use program_methods::OUTER_ID;
 use sparse_merkle_tree::SparseMerkleTree;
 
-fn mint_fresh_account(address: Address) -> Account {
-    let nonce = [0; 8];
-    Account::new(address, nonce)
-}
-
-/// A private execution of the transfer function.
+/// A private execution of the TransferMultiple function.
 /// This actually "burns" a sender private account and "mints" two new private accounts:
 /// one for the recipient with the transferred balance, and another owned by the sender with the remaining balance.
 fn main() {
-    // This is supposed to be an existing private account (UTXO) with balance equal to 150.
-    // And it is supposed to be a private account of the user running this private execution (hence the access to the private key)
+    // Setup commitment tree, simulating a current chain state that has a private account already
+    // committed to the commitment tree.
     let sender_private_key = [1, 2, 3, 4, 4, 3, 2, 1];
     let sender = {
-        // Creating it now but it's supposed to be already created by other previous transactions.
+        // Creating this here but it is supposed to be already in the private possesion of the user
         let mut account = Account::new_from_private_key(sender_private_key);
         account.balance = 150;
         account
     };
-
     let commitment_tree = SparseMerkleTree::new([sender.commitment()].into_iter().collect());
+
+    // Get the root of the commitment tree and the authentication path of the commitment of the private account.
     let root = bytes_to_words(&commitment_tree.root());
     let auth_path: Vec<[u32; 8]> = commitment_tree
         .get_authentication_path_for_value(sender.commitment())
@@ -36,37 +32,40 @@ fn main() {
         .collect();
     let auth_path: AuthenticationPath = auth_path.try_into().unwrap();
 
-    let balance_to_move: u128 = 3;
-
-    // This is the new private account (UTXO) being minted by this private execution. (The `receiver_address` would be <Npk> in UTXO's terminology)
+    // These are the new private account being minted by this private execution.
+    // (the `receiver_address` would be <Npk> in UTXO's terminology)
     let receiver_address_1 = [99; 8];
-    let receiver_1 = mint_fresh_account(receiver_address_1);
-
+    let receiver_1 = new_default_account(receiver_address_1);
     let receiver_address_2 = [100; 8];
-    let receiver_2 = mint_fresh_account(receiver_address_2);
+    let receiver_2 = new_default_account(receiver_address_2);
 
+    // Setup input visibilites. All accounts are private for this execution.
     let visibilities = vec![
         InputVisibiility::Private(Some((sender_private_key, auth_path))),
         InputVisibiility::Private(None),
         InputVisibiility::Private(None),
     ];
 
+    // Set the balances to be sent to the two receiver addresses.
+    // This means, the execution will remove 70 tokens from the sender
+    // and send 30 to the first receiver and 40 to the second.
+    let balance_to_move = vec![30, 40];
+
+    // Execute and prove the outer program for the TransferMultipleProgram.
     let (receipt, _) = nssa::invoke_privacy_execution::<TransferMultipleProgram>(
         &[sender, receiver_1, receiver_2],
-        vec![30, 40],
+        balance_to_move,
         &visibilities,
         root,
     )
     .unwrap();
 
-    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) =
-        receipt.journal.decode().unwrap();
-    println!("public_outputs: {:?}", output.0);
-    println!("nullifiers: {:?}", output.1);
-    println!("commitments: {:?}", output.2);
-    println!("commitment_tree_root: {:?}", output.3);
+    // Verify the proof
+    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) = receipt.journal.decode().unwrap();
+    assert!(nssa::verify_privacy_execution(receipt, &output.0, &output.1, &output.2, &output.3).is_ok());
+    println!("OK!");
+}
 
-    assert!(
-        nssa::verify_privacy_execution(receipt, &output.0, &output.1, &output.2, &output.3).is_ok()
-    );
+fn new_default_account(address: Address) -> Account {
+    Account::new(address, 0)
 }
