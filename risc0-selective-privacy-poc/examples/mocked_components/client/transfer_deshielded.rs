@@ -20,6 +20,7 @@ impl MockedClient {
         let receiver_addr = to_address;
         let mut receiver_account = Self::fresh_account_for_mint(*receiver_addr);
         let visibilities = [InputVisibiility::Public, InputVisibiility::Private(None)];
+
         let private_outputs = Self::prove_and_send_to_sequencer::<TransferProgram>(
             &[sender_account, receiver_account],
             balance_to_move,
