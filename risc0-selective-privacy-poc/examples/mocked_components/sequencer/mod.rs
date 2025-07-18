@@ -25,7 +25,7 @@ const DEPLOYED_PROGRAM_IDS: [ProgramId; 3] = [TRANSFER_ID, TRANSFER_MULTIPLE_ID,
 /// The initial balance of the genesis accounts
 const INITIAL_BALANCE: u128 = 150;
 /// The address of the piñata program account
-const PINATA_ADDRESS: Address = [0xcafe; 8];
+pub const PINATA_ADDRESS: Address = [0xcafe; 8];
 
 impl MockedSequencer {
     pub fn new() -> Self {
