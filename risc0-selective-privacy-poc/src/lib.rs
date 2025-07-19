@@ -129,23 +129,6 @@ pub fn execute_offchain<P: Program>(
 }
 
 /// Verifies a proof of the outer program for the given parameters.
-pub fn verify_privacy_execution(
-    receipt: Receipt,
-    public_accounts_inputs_outputs: &[Account],
-    nullifiers: &[Nullifier],
-    private_output_commitments: &[Commitment],
-    commitment_tree_root: &[u32; 8],
-) -> Result<(), ()> {
-    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) = receipt.journal.decode().unwrap();
-    let expected_output = (
-        public_accounts_inputs_outputs.to_vec(),
-        nullifiers.to_vec(),
-        private_output_commitments.to_vec(),
-        commitment_tree_root.to_owned(),
-    );
-    if output != expected_output {
-        Err(())
-    } else {
-        receipt.verify(OUTER_ID).map_err(|_| ())
-    }
+pub fn verify_privacy_execution(receipt: Receipt) -> Result<(), ()> {
+    receipt.verify(OUTER_ID).map_err(|_| ())
 }

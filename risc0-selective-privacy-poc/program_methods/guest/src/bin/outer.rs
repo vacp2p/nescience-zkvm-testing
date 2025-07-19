@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     compute_nullifier, hash, is_in_tree,
-    types::{Nonce, ProgramId},
+    types::{Nonce, PrivacyExecutionOutput, ProgramId},
     visibility::AccountVisibility,
 };
 use risc0_zkvm::{guest::env, serde::to_vec};
@@ -110,24 +110,29 @@ fn main() {
     let private_output_commitments: Vec<_> = private_outputs.iter().map(|account| account.commitment()).collect();
 
     // Get the list of public accounts pre and post states
-    let mut public_inputs_outputs = Vec::new();
-    for (account, visibility) in inputs
-        .iter()
-        .chain(outputs.iter())
+    let mut public_accounts_pre = Vec::new();
+    let mut public_accounts_post = Vec::new();
+    for ((account_pre, account_post), visibility) in inputs
+        .into_iter()
+        .zip(outputs.into_iter())
         .zip(account_visibilities.iter().chain(account_visibilities.iter()))
     {
         match visibility {
             AccountVisibility::Public => {
-                public_inputs_outputs.push(account);
+                public_accounts_pre.push(account_pre);
+                public_accounts_post.push(account_post);
             }
             AccountVisibility::Private(_) => continue,
         }
     }
 
-    env::commit(&(
-        public_inputs_outputs,
-        nullifiers,
+    let output = PrivacyExecutionOutput {
+        public_accounts_pre,
+        public_accounts_post,
         private_output_commitments,
+        nullifiers,
         commitment_tree_root,
-    ));
+    };
+
+    env::commit(&output);
 }

@@ -2,7 +2,10 @@ pub mod account;
 pub mod types;
 pub mod visibility;
 
-use crate::types::{AuthenticationPath, Commitment, Key, Nullifier};
+use crate::{
+    account::Account,
+    types::{AuthenticationPath, Commitment, Key, Nullifier},
+};
 use risc0_zkvm::sha::{Impl, Sha256};
 
 pub fn hash(bytes: &[u32]) -> [u32; 8] {

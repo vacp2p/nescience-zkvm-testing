@@ -61,8 +61,7 @@ fn main() {
     .unwrap();
 
     // Verify the proof
-    let output: (Vec<Account>, Vec<Nullifier>, Vec<Commitment>, [u32; 8]) = receipt.journal.decode().unwrap();
-    assert!(nssa::verify_privacy_execution(receipt, &output.0, &output.1, &output.2, &output.3).is_ok());
+    assert!(nssa::verify_privacy_execution(receipt).is_ok());
     println!("OK!");
 }
 
