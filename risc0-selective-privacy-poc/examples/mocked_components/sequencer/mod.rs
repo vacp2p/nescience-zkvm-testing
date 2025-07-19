@@ -1,11 +1,10 @@
 use core::{
     account::Account,
     bytes_to_words,
-    types::{Address, AuthenticationPath, Commitment, Nullifier, ProgramId},
+    types::{Address, AuthenticationPath, Commitment, Nullifier},
 };
 use std::collections::{BTreeMap, HashSet};
 
-use program_methods::{PINATA_ID, TRANSFER_ID, TRANSFER_MULTIPLE_ID};
 use sparse_merkle_tree::SparseMerkleTree;
 
 use crate::mocked_components::USER_CLIENTS;
@@ -90,7 +89,7 @@ pub fn print_accounts(sequencer: &MockedSequencer, private_accounts: &[&Account]
     println!("{:-<20}", "");
 
     for commitment in sequencer.commitment_tree.values().iter() {
-        println!("{:<20x}", commitment);
+        println!("{commitment:<20x}");
     }
 
     println!("{:-<20}\n", "");
@@ -105,7 +104,7 @@ pub fn print_accounts(sequencer: &MockedSequencer, private_accounts: &[&Account]
     println!("{:-<20}", "");
 
     for entry in formatted {
-        println!("{:<20}", entry);
+        println!("{entry:<20}");
     }
 
     println!("{:-<20}\n", "");

@@ -1,6 +1,6 @@
 use core::{
     account::Account,
-    types::{Commitment, Nonce, Nullifier, ProgramOutput},
+    types::{Nonce, ProgramOutput},
     visibility::AccountVisibility,
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
@@ -95,12 +95,11 @@ pub fn execute_offchain<P: Program>(
     commitment_tree_root: [u32; 8],
 ) -> Result<(Receipt, Vec<Account>), ()> {
     // Prove inner program and get post state of the accounts
-    let num_inputs = inputs.len();
     let inner_receipt = execute_and_prove_inner::<P>(inputs, instruction_data)?;
     let inner_program_output: ProgramOutput = inner_receipt.journal.decode().map_err(|_| ())?;
 
     // Sample fresh random nonces for the outputs of this execution
-    let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
+    let output_nonces: Vec<_> = (0..inputs.len()).map(|_| new_random_nonce()).collect();
 
     // Prove outer program.
     let mut env_builder = ExecutorEnv::builder();

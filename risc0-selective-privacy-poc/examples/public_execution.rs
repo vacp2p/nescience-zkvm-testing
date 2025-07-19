@@ -1,6 +1,5 @@
 use core::account::Account;
 
-use nssa;
 
 use nssa::program::TransferMultipleProgram;
 

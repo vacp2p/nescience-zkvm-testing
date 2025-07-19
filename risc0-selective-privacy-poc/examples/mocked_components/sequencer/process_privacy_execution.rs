@@ -1,7 +1,4 @@
-use core::{
-    account::Account,
-    types::{Commitment, Nullifier, PrivacyExecutionOutput},
-};
+use core::types::PrivacyExecutionOutput;
 
 use risc0_zkvm::Receipt;
 

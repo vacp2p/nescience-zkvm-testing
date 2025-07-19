@@ -77,6 +77,6 @@ impl MockedSequencer {
             return false;
         }
 
-        return true;
+        true
     }
 }

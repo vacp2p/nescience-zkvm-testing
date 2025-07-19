@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     bytes_to_words,
-    types::{Address, AuthenticationPath, Commitment, Nullifier},
+    types::{Address, AuthenticationPath},
     visibility::AccountVisibility,
 };
 use nssa::program::TransferMultipleProgram;
