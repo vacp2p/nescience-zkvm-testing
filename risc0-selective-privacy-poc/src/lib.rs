@@ -1,6 +1,6 @@
 use core::{
     account::Account,
-    types::{Commitment, Nonce, Nullifier},
+    types::{Commitment, Nonce, Nullifier, ProgramOutput},
     visibility::AccountVisibility,
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
@@ -33,7 +33,7 @@ fn write_inputs<P: Program>(
 fn execute_and_prove_inner<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
-) -> Result<(Receipt, Vec<Account>), ()> {
+) -> Result<Receipt, ()> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
     write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
@@ -42,25 +42,20 @@ fn execute_and_prove_inner<P: Program>(
     // Prove the program
     let prover = default_prover();
     let prove_info = prover.prove(env, P::PROGRAM_ELF).map_err(|_| ())?;
-    let receipt = prove_info.receipt;
-
-    // Get proof and (inputs and) outputs
-    let inputs_outputs: Vec<Account> = receipt.journal.decode().map_err(|_| ())?;
-
-    Ok((receipt, inputs_outputs))
+    Ok(prove_info.receipt)
 }
 
 /// Builds the private outputs from the results of the execution of an inner program.
 /// Populates the nonces with the ones provided.
 fn build_private_outputs_from_inner_results(
-    inputs_outputs: &[Account],
+    inner_program_output: &ProgramOutput,
     num_inputs: usize,
     visibilities: &[AccountVisibility],
     nonces: &[Nonce],
 ) -> Vec<Account> {
-    inputs_outputs
+    inner_program_output
+        .accounts_post
         .iter()
-        .skip(num_inputs)
         .zip(visibilities)
         .zip(nonces)
         .filter(|((_, visibility), _)| matches!(visibility, AccountVisibility::Private(_)))
@@ -77,7 +72,7 @@ fn build_private_outputs_from_inner_results(
 pub fn execute_onchain<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
-) -> Result<Vec<Account>, ()> {
+) -> Result<ProgramOutput, ()> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
     write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
@@ -88,9 +83,7 @@ pub fn execute_onchain<P: Program>(
     let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| ())?;
 
     // Get (inputs and) outputs
-    let inputs_outputs: Vec<Account> = session_info.journal.decode().map_err(|_| ())?;
-
-    Ok(inputs_outputs)
+    session_info.journal.decode().map_err(|_| ())
 }
 
 /// Executes and proves the inner program `P` and executes and proves the outer program on top of it.
@@ -104,7 +97,8 @@ pub fn execute_offchain<P: Program>(
 ) -> Result<(Receipt, Vec<Account>), ()> {
     // Prove inner program and get post state of the accounts
     let num_inputs = inputs.len();
-    let (inner_receipt, inputs_outputs) = execute_and_prove_inner::<P>(inputs, instruction_data)?;
+    let inner_receipt = execute_and_prove_inner::<P>(inputs, instruction_data)?;
+    let inner_program_output: ProgramOutput = inner_receipt.journal.decode().map_err(|_| ())?;
 
     // Sample fresh random nonces for the outputs of this execution
     let output_nonces: Vec<_> = (0..num_inputs).map(|_| new_random_nonce()).collect();
@@ -112,8 +106,7 @@ pub fn execute_offchain<P: Program>(
     // Prove outer program.
     let mut env_builder = ExecutorEnv::builder();
     env_builder.add_assumption(inner_receipt);
-    env_builder.write(&(num_inputs as u32)).unwrap();
-    env_builder.write(&inputs_outputs).unwrap();
+    env_builder.write(&inner_program_output).unwrap();
     env_builder.write(&visibilities).unwrap();
     env_builder.write(&output_nonces).unwrap();
     env_builder.write(&commitment_tree_root).unwrap();
@@ -124,7 +117,7 @@ pub fn execute_offchain<P: Program>(
 
     // Build private accounts.
     let private_outputs =
-        build_private_outputs_from_inner_results(&inputs_outputs, num_inputs, visibilities, &output_nonces);
+        build_private_outputs_from_inner_results(&inner_program_output, num_inputs, visibilities, &output_nonces);
     Ok((prove_info.receipt, private_outputs))
 }
 

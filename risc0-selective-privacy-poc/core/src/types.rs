@@ -12,6 +12,12 @@ pub type AuthenticationPath = [[u32; 8]; 32];
 pub type ProgramId = [u32; 8];
 
 #[derive(Serialize, Deserialize)]
+pub struct ProgramOutput {
+    pub accounts_pre: Vec<Account>,
+    pub accounts_post: Vec<Account>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct PrivacyExecutionOutput {
     pub public_accounts_pre: Vec<Account>,
     pub public_accounts_post: Vec<Account>,

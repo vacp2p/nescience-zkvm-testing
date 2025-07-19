@@ -1,4 +1,4 @@
-use core::account::Account;
+use core::{account::Account, types::ProgramOutput};
 use risc0_zkvm::guest::env;
 
 /// A transfer of balance program with one sender and multiple recipients.
@@ -27,21 +27,18 @@ fn main() {
 
     // Create accounts post states, with updated balances
     let mut sender_post = sender.clone();
-    let mut receivers_post = recipients.clone();
+    let mut recipients_post = recipients.clone();
 
     // Transfer balances
     sender_post.balance -= total_balance_to_move;
-    for (receiver, balance_for_receiver) in receivers_post.iter_mut().zip(target_balances) {
+    for (receiver, balance_for_receiver) in recipients_post.iter_mut().zip(target_balances) {
         receiver.balance += balance_for_receiver;
     }
 
-    // Flatten pre and post states for output
-    let inputs_outputs: Vec<Account> = vec![sender]
-        .into_iter()
-        .chain(recipients)
-        .chain(vec![sender_post])
-        .chain(receivers_post)
-        .collect();
+    let output = ProgramOutput {
+        accounts_pre: vec![sender].into_iter().chain(recipients).collect(),
+        accounts_post: vec![sender_post].into_iter().chain(recipients_post).collect(),
+    };
 
-    env::commit(&inputs_outputs);
+    env::commit(&output);
 }

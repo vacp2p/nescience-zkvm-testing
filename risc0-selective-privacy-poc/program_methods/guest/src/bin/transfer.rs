@@ -1,4 +1,4 @@
-use core::account::Account;
+use core::{account::Account, types::ProgramOutput};
 use risc0_zkvm::guest::env;
 
 /// A transfer of balance program.
@@ -22,5 +22,10 @@ fn main() {
     sender_post.balance -= balance_to_move;
     receiver_post.balance += balance_to_move;
 
-    env::commit(&vec![sender, receiver, sender_post, receiver_post]);
+    let output = ProgramOutput {
+        accounts_pre: vec![sender, receiver],
+        accounts_post: vec![sender_post, receiver_post],
+    };
+
+    env::commit(&output);
 }

@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     compute_nullifier, hash, is_in_tree,
-    types::{Nonce, PrivacyExecutionOutput, ProgramId},
+    types::{Nonce, PrivacyExecutionOutput, ProgramId, ProgramOutput},
     visibility::AccountVisibility,
 };
 use risc0_zkvm::{guest::env, serde::to_vec};
@@ -29,18 +29,18 @@ use risc0_zkvm::{guest::env, serde::to_vec};
 /// - The commitments for the ouput private accounts.
 /// - The commitment tree root used for the authentication path verifications.
 fn main() {
-    let num_inputs: u32 = env::read();
     // Read inputs and outputs
-    let mut inputs_outputs: Vec<Account> = env::read();
-    assert_eq!(inputs_outputs.len() as u32, num_inputs * 2);
+    let mut inner_program_output: ProgramOutput = env::read();
+    let num_inputs = inner_program_output.accounts_pre.len();
+    assert_eq!(inner_program_output.accounts_post.len(), num_inputs);
 
     // Read visibilities
     let account_visibilities: Vec<AccountVisibility> = env::read();
-    assert_eq!(account_visibilities.len() as u32, num_inputs);
+    assert_eq!(account_visibilities.len(), num_inputs);
 
     // Read nonces for outputs
     let output_nonces: Vec<Nonce> = env::read();
-    assert_eq!(output_nonces.len() as u32, num_inputs);
+    assert_eq!(output_nonces.len(), num_inputs);
 
     // Read root and program id.
     let commitment_tree_root: [u32; 8] = env::read();
@@ -48,14 +48,10 @@ fn main() {
 
     // Verify pre states and post states of accounts are consistent
     // with the execution of the `program_id` program
-    env::verify(program_id, &to_vec(&inputs_outputs).unwrap()).unwrap();
+    env::verify(program_id, &to_vec(&inner_program_output).unwrap()).unwrap();
 
-    // Split inputs_outputs into two separate vectors
-    let (inputs, mut outputs) = {
-        let outputs = inputs_outputs.split_off(num_inputs as usize);
-        (inputs_outputs, outputs)
-    };
-
+    let inputs = inner_program_output.accounts_pre;
+    let mut outputs = inner_program_output.accounts_post;
     let mut nullifiers = Vec::new();
     for (visibility, input_account) in account_visibilities.iter().zip(inputs.iter()) {
         match visibility {

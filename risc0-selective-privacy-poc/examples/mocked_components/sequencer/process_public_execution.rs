@@ -1,4 +1,7 @@
-use core::{account::Account, types::Address};
+use core::{
+    account::Account,
+    types::{Address, ProgramOutput},
+};
 
 use super::MockedSequencer;
 
@@ -16,20 +19,17 @@ impl MockedSequencer {
             .collect::<Result<_, _>>()?;
 
         // Execute the program
-        let inputs_outputs = nssa::execute_onchain::<P>(&input_accounts, instruction_data)?;
+        let program_output = nssa::execute_onchain::<P>(&input_accounts, instruction_data)?;
 
         // Perform consistency checks
-        if !self.inputs_outputs_are_consistent(&input_accounts, &inputs_outputs) {
+        if !self.program_output_is_valid(&input_accounts, &program_output) {
             return Err(());
         }
 
         // Update the accounts states
-        inputs_outputs
-            .into_iter()
-            .skip(input_accounts.len())
-            .for_each(|account_post_state| {
-                self.accounts.insert(account_post_state.address, account_post_state);
-            });
+        program_output.accounts_post.into_iter().for_each(|account_post_state| {
+            self.accounts.insert(account_post_state.address, account_post_state);
+        });
         Ok(())
     }
 
@@ -37,22 +37,24 @@ impl MockedSequencer {
     /// `input_accounts` are the accounts provided as inputs to the program.
     /// `inputs_outputs` is the program output, which should consist of the accounts pre and
     /// post-states.
-    fn inputs_outputs_are_consistent(&self, input_accounts: &[Account], inputs_outputs: &[Account]) -> bool {
+    fn program_output_is_valid(&self, input_accounts: &[Account], program_output: &ProgramOutput) -> bool {
         let num_inputs = input_accounts.len();
 
-        // Fail if the number of accounts pre and post-states is inconsistent with the number of
-        // inputs.
-        if inputs_outputs.len() != num_inputs * 2 {
+        // Fail if the number of accounts pre and post-states is differ
+        if program_output.accounts_pre.len() != program_output.accounts_post.len() {
             return false;
         }
 
         // Fail if the accounts pre-states do not coincide with the input accounts.
-        let (claimed_accounts_pre, accounts_post) = inputs_outputs.split_at(num_inputs);
-        if claimed_accounts_pre != input_accounts {
+        if program_output.accounts_pre != input_accounts {
             return false;
         }
 
-        for (account_pre, account_post) in input_accounts.iter().zip(accounts_post) {
+        for (account_pre, account_post) in program_output
+            .accounts_pre
+            .iter()
+            .zip(program_output.accounts_post.iter())
+        {
             // Fail if the program modified the addresses of the input accounts
             if account_pre.address != account_post.address {
                 return false;
@@ -69,7 +71,7 @@ impl MockedSequencer {
         }
 
         let total_balance_pre: u128 = input_accounts.iter().map(|account| account.balance).sum();
-        let total_balance_post: u128 = accounts_post.iter().map(|account| account.balance).sum();
+        let total_balance_post: u128 = program_output.accounts_post.iter().map(|account| account.balance).sum();
         // Fail if the execution didn't preserve the total supply.
         if total_balance_pre != total_balance_post {
             return false;

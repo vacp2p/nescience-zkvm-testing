@@ -1,4 +1,4 @@
-use core::{account::Account, hash};
+use core::{account::Account, hash, types::ProgramOutput};
 use risc0_zkvm::guest::env;
 
 const TARGET_HASH: [u32; 8] = [
@@ -36,10 +36,10 @@ fn main() {
     pinata_account_post.balance -= PINATA_PRIZE;
     winner_account_post.balance += PINATA_PRIZE;
 
-    env::commit(&vec![
-        pinata_account,
-        winner_account,
-        pinata_account_post,
-        winner_account_post,
-    ]);
+    let output = ProgramOutput {
+        accounts_pre: vec![pinata_account, winner_account],
+        accounts_post: vec![pinata_account_post, winner_account_post],
+    };
+
+    env::commit(&output);
 }
