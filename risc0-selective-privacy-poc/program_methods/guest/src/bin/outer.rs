@@ -2,7 +2,7 @@ use core::{
     account::Account,
     compute_nullifier, hash, is_in_tree,
     types::{Nonce, ProgramId},
-    visibility::InputVisibiility,
+    visibility::AccountVisibility,
 };
 use risc0_zkvm::{guest::env, serde::to_vec};
 
@@ -14,7 +14,7 @@ use risc0_zkvm::{guest::env, serde::to_vec};
 /// - Vec<Account>: The output of the inner program. This is assumed to include the accounts pre and
 ///     post-states of the execution of the inner program.
 ///
-/// - Vec<InputVisibility>: A vector indicating which accounts are private and which are public.
+/// - Vec<AccountVisibility>: A vector indicating which accounts are private and which are public.
 ///
 /// - Vec<Nonce>: The vector of nonces to be used for the output accounts. This is assumed to be
 ///     sampled at random by the host program.
@@ -35,8 +35,8 @@ fn main() {
     assert_eq!(inputs_outputs.len() as u32, num_inputs * 2);
 
     // Read visibilities
-    let input_visibilities: Vec<InputVisibiility> = env::read();
-    assert_eq!(input_visibilities.len() as u32, num_inputs);
+    let account_visibilities: Vec<AccountVisibility> = env::read();
+    assert_eq!(account_visibilities.len() as u32, num_inputs);
 
     // Read nonces for outputs
     let output_nonces: Vec<Nonce> = env::read();
@@ -57,9 +57,9 @@ fn main() {
     };
 
     let mut nullifiers = Vec::new();
-    for (visibility, input_account) in input_visibilities.iter().zip(inputs.iter()) {
+    for (visibility, input_account) in account_visibilities.iter().zip(inputs.iter()) {
         match visibility {
-            InputVisibiility::Private(Some((private_key, auth_path))) => {
+            AccountVisibility::Private(Some((private_key, auth_path))) => {
                 // Prove ownership of input accounts by proving knowledge of the pre-image of their addresses.
                 assert_eq!(hash(private_key), input_account.address);
                 // Check the input account was created by a previous transaction by checking it belongs to the commitments tree.
@@ -69,14 +69,14 @@ fn main() {
                 let nullifier = compute_nullifier(&commitment, private_key);
                 nullifiers.push(nullifier);
             }
-            InputVisibiility::Private(None) => {
+            AccountVisibility::Private(None) => {
                 // Private accounts without a companion private key are enforced to have default values
                 // Used for executions that need to create a new private account.
                 assert_eq!(input_account.balance, 0);
                 assert_eq!(input_account.nonce, [0; 8]);
             }
             // No checks on public accounts
-            InputVisibiility::Public => continue,
+            AccountVisibility::Public => continue,
         }
     }
 
@@ -101,10 +101,10 @@ fn main() {
 
     // Compute commitments for every private output
     let mut private_outputs = Vec::new();
-    for (output, visibility) in outputs.iter().zip(input_visibilities.iter()) {
+    for (output, visibility) in outputs.iter().zip(account_visibilities.iter()) {
         match visibility {
-            InputVisibiility::Public => continue,
-            InputVisibiility::Private(_) => private_outputs.push(output),
+            AccountVisibility::Public => continue,
+            AccountVisibility::Private(_) => private_outputs.push(output),
         }
     }
     let private_output_commitments: Vec<_> = private_outputs.iter().map(|account| account.commitment()).collect();
@@ -114,13 +114,13 @@ fn main() {
     for (account, visibility) in inputs
         .iter()
         .chain(outputs.iter())
-        .zip(input_visibilities.iter().chain(input_visibilities.iter()))
+        .zip(account_visibilities.iter().chain(account_visibilities.iter()))
     {
         match visibility {
-            InputVisibiility::Public => {
+            AccountVisibility::Public => {
                 public_inputs_outputs.push(account);
             }
-            InputVisibiility::Private(_) => continue,
+            AccountVisibility::Private(_) => continue,
         }
     }
 

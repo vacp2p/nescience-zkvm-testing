@@ -1,6 +1,6 @@
 use core::account::Account;
 use core::types::Address;
-use core::visibility::InputVisibiility;
+use core::visibility::AccountVisibility;
 
 use nssa::program::TransferProgram;
 
@@ -26,8 +26,8 @@ impl MockedClient {
 
         // Set visibilities. Both private accounts.
         let visibilities = vec![
-            InputVisibiility::Private(Some((self.user_private_key, sender_commitment_auth_path))),
-            InputVisibiility::Private(None),
+            AccountVisibility::Private(Some((self.user_private_key, sender_commitment_auth_path))),
+            AccountVisibility::Private(None),
         ];
 
         // Execute privately (off-chain) and submit it to the sequencer

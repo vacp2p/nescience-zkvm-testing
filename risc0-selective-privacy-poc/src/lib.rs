@@ -1,7 +1,7 @@
 use core::{
     account::Account,
     types::{Commitment, Nonce, Nullifier},
-    visibility::InputVisibiility,
+    visibility::AccountVisibility,
 };
 use program_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
@@ -55,7 +55,7 @@ fn execute_and_prove_inner<P: Program>(
 fn build_private_outputs_from_inner_results(
     inputs_outputs: &[Account],
     num_inputs: usize,
-    visibilities: &[InputVisibiility],
+    visibilities: &[AccountVisibility],
     nonces: &[Nonce],
 ) -> Vec<Account> {
     inputs_outputs
@@ -63,7 +63,7 @@ fn build_private_outputs_from_inner_results(
         .skip(num_inputs)
         .zip(visibilities)
         .zip(nonces)
-        .filter(|((_, visibility), _)| matches!(visibility, InputVisibiility::Private(_)))
+        .filter(|((_, visibility), _)| matches!(visibility, AccountVisibility::Private(_)))
         .map(|((account, _), nonce)| {
             let mut this = account.clone();
             this.nonce = *nonce;
@@ -99,7 +99,7 @@ pub fn execute_onchain<P: Program>(
 pub fn execute_offchain<P: Program>(
     inputs: &[Account],
     instruction_data: P::InstructionData,
-    visibilities: &[InputVisibiility],
+    visibilities: &[AccountVisibility],
     commitment_tree_root: [u32; 8],
 ) -> Result<(Receipt, Vec<Account>), ()> {
     // Prove inner program and get post state of the accounts

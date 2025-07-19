@@ -2,7 +2,7 @@ use crate::mocked_components::sequencer::MockedSequencer;
 use core::{
     account::Account,
     types::{Address, Key},
-    visibility::InputVisibiility,
+    visibility::AccountVisibility,
 };
 
 pub mod transfer_deshielded;
@@ -29,7 +29,7 @@ impl MockedClient {
     pub fn prove_and_send_to_sequencer<P: nssa::Program>(
         input_accounts: &[Account],
         instruction_data: P::InstructionData,
-        visibilities: &[InputVisibiility],
+        visibilities: &[AccountVisibility],
         commitment_tree_root: [u32; 8],
         sequencer: &mut MockedSequencer,
     ) -> Result<Vec<Account>, ()> {

@@ -1,6 +1,6 @@
 use core::account::Account;
 use core::types::Address;
-use core::visibility::InputVisibiility;
+use core::visibility::AccountVisibility;
 
 use nssa::program::TransferProgram;
 
@@ -24,11 +24,11 @@ impl MockedClient {
         // Fetch public account to deshield to
         let to_account = sequencer.get_account(&to_address).unwrap();
 
-        // Set input visibilities
+        // Set account visibilities
         // First entry is the private sender. Second entry is the public receiver
         let visibilities = vec![
-            InputVisibiility::Private(Some((self.user_private_key, sender_commitment_auth_path))),
-            InputVisibiility::Public,
+            AccountVisibility::Private(Some((self.user_private_key, sender_commitment_auth_path))),
+            AccountVisibility::Public,
         ];
 
         // Execute privately (off-chain) and submit it to the sequencer

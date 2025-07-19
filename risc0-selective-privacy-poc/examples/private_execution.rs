@@ -2,7 +2,7 @@ use core::{
     account::Account,
     bytes_to_words,
     types::{Address, AuthenticationPath, Commitment, Nullifier},
-    visibility::InputVisibiility,
+    visibility::AccountVisibility,
 };
 use nssa::program::TransferMultipleProgram;
 use sparse_merkle_tree::SparseMerkleTree;
@@ -38,11 +38,11 @@ fn main() {
     let receiver_address_2 = [100; 8];
     let receiver_2 = new_default_account(receiver_address_2);
 
-    // Setup input visibilites. All accounts are private for this execution.
+    // Setup input account visibilites. All accounts are private for this execution.
     let visibilities = vec![
-        InputVisibiility::Private(Some((sender_private_key, auth_path))),
-        InputVisibiility::Private(None),
-        InputVisibiility::Private(None),
+        AccountVisibility::Private(Some((sender_private_key, auth_path))),
+        AccountVisibility::Private(None),
+        AccountVisibility::Private(None),
     ];
 
     // Set the balances to be sent to the two receiver addresses.

@@ -1,6 +1,6 @@
 use core::account::Account;
 use core::types::Address;
-use core::visibility::InputVisibiility;
+use core::visibility::AccountVisibility;
 
 use nssa::program::TransferProgram;
 
@@ -24,10 +24,10 @@ impl MockedClient {
         // Create a new default private account for the receiver
         let to_account = Self::fresh_account_for_mint(*to_address);
 
-        // Set input visibilities
+        // Set account visibilities
         // First is the public account of the sender. Second is the private account minted in this
         // execution
-        let visibilities = [InputVisibiility::Public, InputVisibiility::Private(None)];
+        let visibilities = [AccountVisibility::Public, AccountVisibility::Private(None)];
 
         // Execute privately (off-chain) and submit it to the sequencer
         let private_outputs = Self::prove_and_send_to_sequencer::<TransferProgram>(

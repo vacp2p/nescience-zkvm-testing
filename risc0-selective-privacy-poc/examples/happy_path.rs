@@ -1,4 +1,4 @@
-use core::{bytes_to_words, types::Address, visibility::InputVisibiility};
+use core::{bytes_to_words, types::Address, visibility::AccountVisibility};
 
 use nssa::program::PinataProgram;
 
@@ -60,7 +60,7 @@ fn main() {
         // All of this is executed locally by the User1
         let pinata_account = sequencer.get_account(&PINATA_ADDRESS).unwrap();
         let receiver_account = MockedClient::fresh_account_for_mint(USER_CLIENTS[1].user_address());
-        let visibilities = [InputVisibiility::Public, InputVisibiility::Private(None)];
+        let visibilities = [AccountVisibility::Public, AccountVisibility::Private(None)];
         let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();
 
         let private_outputs = MockedClient::prove_and_send_to_sequencer::<PinataProgram>(
