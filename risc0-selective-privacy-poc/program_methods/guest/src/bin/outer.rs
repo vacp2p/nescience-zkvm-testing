@@ -108,10 +108,8 @@ fn main() {
     // Get the list of public accounts pre and post states
     let mut public_accounts_pre = Vec::new();
     let mut public_accounts_post = Vec::new();
-    for ((account_pre, account_post), visibility) in inputs
-        .into_iter()
-        .zip(outputs.into_iter())
-        .zip(account_visibilities.iter().chain(account_visibilities.iter()))
+    for ((account_pre, account_post), visibility) in
+        inputs.into_iter().zip(outputs.into_iter()).zip(account_visibilities)
     {
         match visibility {
             AccountVisibility::Public => {
