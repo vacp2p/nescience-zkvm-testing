@@ -54,9 +54,9 @@ fn main() {
     println!("📝 Balances after public piñata execution");
     print_accounts(&sequencer, &[&private_account_user_1, &private_account_user_2]);
 
-    // A deshielded execution of the Piñata program
+    // A shielded execution of the Piñata program
     // User1 claims the prize of the Piñata program to a new self-owned private account
-    let private_account_user_0 = {
+    let another_private_account_user_1 = {
         // All of this is executed locally by the User1
         let pinata_account = sequencer.get_account(&PINATA_ADDRESS).unwrap();
         let receiver_account = MockedClient::fresh_account_for_mint(USER_CLIENTS[1].user_address());
@@ -71,8 +71,8 @@ fn main() {
             &mut sequencer,
         )
         .unwrap();
-        let [private_account_user_0] = private_outputs.try_into().unwrap();
-        private_account_user_0
+        let [private_account_user_1] = private_outputs.try_into().unwrap();
+        private_account_user_1
     };
     println!("📝 Balances after private piñata execution");
     print_accounts(
@@ -80,7 +80,7 @@ fn main() {
         &[
             &private_account_user_1,
             &private_account_user_2,
-            &private_account_user_0,
+            &another_private_account_user_1,
         ],
     );
 
