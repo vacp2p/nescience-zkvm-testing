@@ -46,10 +46,9 @@ fn execute_and_prove_inner<P: Program>(
 }
 
 /// Builds the private outputs from the results of the execution of an inner program.
-/// Populates the nonces with the ones provided.
+/// Filters private outputs and populates the nonces with the ones provided.
 fn build_private_outputs_from_inner_results(
     inner_program_output: &ProgramOutput,
-    num_inputs: usize,
     visibilities: &[AccountVisibility],
     nonces: &[Nonce],
 ) -> Vec<Account> {
@@ -116,8 +115,8 @@ pub fn execute_offchain<P: Program>(
     let prove_info = prover.prove(env, OUTER_ELF).unwrap();
 
     // Build private accounts.
-    let private_outputs =
-        build_private_outputs_from_inner_results(&inner_program_output, num_inputs, visibilities, &output_nonces);
+    let private_outputs = build_private_outputs_from_inner_results(&inner_program_output, visibilities, &output_nonces);
+
     Ok((prove_info.receipt, private_outputs))
 }
 
