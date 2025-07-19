@@ -40,7 +40,7 @@ impl MockedSequencer {
     fn program_output_is_valid(&self, input_accounts: &[Account], program_output: &ProgramOutput) -> bool {
         let num_inputs = input_accounts.len();
 
-        // Fail if the number of accounts pre and post-states is differ
+        // Fail if the number of accounts pre and post-states differ
         if program_output.accounts_pre.len() != program_output.accounts_post.len() {
             return false;
         }
