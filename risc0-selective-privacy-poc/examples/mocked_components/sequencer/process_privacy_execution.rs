@@ -60,7 +60,6 @@ impl MockedSequencer {
         // At this point the privacy execution is considered valid.
         //
         // Update the state of the public accounts with the post-state of this privacy execution
-
         output.public_accounts_post.into_iter().for_each(|account_post_state| {
             self.accounts.insert(account_post_state.address, account_post_state);
         });

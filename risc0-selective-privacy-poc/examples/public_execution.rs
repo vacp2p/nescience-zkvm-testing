@@ -1,6 +1,5 @@
 use core::account::Account;
 
-
 use nssa::program::TransferMultipleProgram;
 
 /// A public execution of the TransferMultipleProgram.

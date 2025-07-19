@@ -22,7 +22,7 @@ impl MockedSequencer {
         let program_output = nssa::execute_onchain::<P>(&input_accounts, instruction_data)?;
 
         // Perform consistency checks
-        if !self.program_output_is_valid(&input_accounts, &program_output) {
+        if !self.program_output_is_valid(&input_accounts, &program_output.accounts_post) {
             return Err(());
         }
 
@@ -35,26 +35,14 @@ impl MockedSequencer {
 
     /// Verifies that a program public execution didn't break the chain's rules.
     /// `input_accounts` are the accounts provided as inputs to the program.
-    /// `inputs_outputs` is the program output, which should consist of the accounts pre and
-    /// post-states.
-    fn program_output_is_valid(&self, input_accounts: &[Account], program_output: &ProgramOutput) -> bool {
-        let num_inputs = input_accounts.len();
-
-        // Fail if the number of accounts pre and post-states differ
-        if program_output.accounts_pre.len() != program_output.accounts_post.len() {
+    /// `output_accounts` are the accounts post states after execution of the program
+    fn program_output_is_valid(&self, input_accounts: &[Account], output_accounts: &[Account]) -> bool {
+        // Fail if the number of input and output accounts differ
+        if input_accounts.len() != output_accounts.len() {
             return false;
         }
 
-        // Fail if the accounts pre-states do not coincide with the input accounts.
-        if program_output.accounts_pre != input_accounts {
-            return false;
-        }
-
-        for (account_pre, account_post) in program_output
-            .accounts_pre
-            .iter()
-            .zip(program_output.accounts_post.iter())
-        {
+        for (account_pre, account_post) in input_accounts.iter().zip(output_accounts) {
             // Fail if the program modified the addresses of the input accounts
             if account_pre.address != account_post.address {
                 return false;
@@ -70,9 +58,9 @@ impl MockedSequencer {
             }
         }
 
-        let total_balance_pre: u128 = input_accounts.iter().map(|account| account.balance).sum();
-        let total_balance_post: u128 = program_output.accounts_post.iter().map(|account| account.balance).sum();
         // Fail if the execution didn't preserve the total supply.
+        let total_balance_pre: u128 = input_accounts.iter().map(|account| account.balance).sum();
+        let total_balance_post: u128 = output_accounts.iter().map(|account| account.balance).sum();
         if total_balance_pre != total_balance_post {
             return false;
         }
