@@ -1,10 +1,9 @@
+use super::{MockedClient, MockedSequencer};
+use crate::mocked_components::sequencer::error::Error;
 use core::account::Account;
 use core::types::Address;
 use core::visibility::AccountVisibility;
-
 use nssa::program::TransferProgram;
-
-use super::{MockedClient, MockedSequencer};
 
 impl MockedClient {
     /// A private execution of the Transfer program
@@ -15,7 +14,7 @@ impl MockedClient {
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Result<[Account; 2], nssa::Error> {
+    ) -> Result<[Account; 2], Error> {
         // Fetch commitment tree root from the sequencer
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         // Compute authenticaton path for the input private account

@@ -9,6 +9,7 @@ use sparse_merkle_tree::SparseMerkleTree;
 
 use crate::mocked_components::USER_CLIENTS;
 
+pub mod error;
 pub mod process_privacy_execution;
 pub mod process_public_execution;
 

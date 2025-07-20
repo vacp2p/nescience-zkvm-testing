@@ -5,6 +5,8 @@ use core::{
     visibility::AccountVisibility,
 };
 
+use super::sequencer::error::Error;
+
 pub mod transfer_deshielded;
 pub mod transfer_private;
 pub mod transfer_public;
@@ -32,10 +34,11 @@ impl MockedClient {
         visibilities: &[AccountVisibility],
         commitment_tree_root: [u32; 8],
         sequencer: &mut MockedSequencer,
-    ) -> Result<Vec<Account>, nssa::Error> {
+    ) -> Result<Vec<Account>, Error> {
         // Execute and generate proof of the outer program
         let (receipt, private_outputs) =
-            nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root)?;
+            nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root)
+                .map_err(|_| Error::Generic)?;
 
         // Send proof to the sequencer
         sequencer.process_privacy_execution(receipt)?;
