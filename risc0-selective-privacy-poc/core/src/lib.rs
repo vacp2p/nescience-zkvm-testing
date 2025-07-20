@@ -2,7 +2,7 @@ pub mod account;
 pub mod types;
 pub mod visibility;
 
-use crate::types::{AuthenticationPath, Commitment, Key, Nullifier};
+use crate::{account::Account, types::{AuthenticationPath, Commitment, Key, Nullifier}};
 use risc0_zkvm::sha::{Impl, Sha256};
 
 pub fn hash(bytes: &[u32]) -> [u32; 8] {
@@ -48,4 +48,34 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
         words[i] = u32::from_le_bytes(chunk.try_into().unwrap());
     }
     words
+}
+
+/// Verifies that a program public execution didn't break the chain's rules.
+/// `input_accounts` are the accounts provided as inputs to the program.
+/// `output_accounts` are the accounts post states after execution of the program
+pub fn inputs_outputs_preserve_invariants(input_accounts: &[Account], output_accounts: &[Account]) -> bool {
+    // Fail if the number of input and output accounts differ
+    if input_accounts.len() != output_accounts.len() {
+        return false;
+    }
+
+    for (account_pre, account_post) in input_accounts.iter().zip(output_accounts) {
+        // Fail if the program modified the addresses of the input accounts
+        if account_pre.address != account_post.address {
+            return false;
+        }
+        // Fail if the program modified the nonces of the input accounts
+        if account_pre.nonce != account_post.nonce {
+            return false;
+        }
+    }
+
+    // Fail if the execution didn't preserve the total supply.
+    let total_balance_pre: u128 = input_accounts.iter().map(|account| account.balance).sum();
+    let total_balance_post: u128 = output_accounts.iter().map(|account| account.balance).sum();
+    if total_balance_pre != total_balance_post {
+        return false;
+    }
+
+    true
 }

@@ -1,5 +1,5 @@
 use core::{
-    compute_nullifier, hash, is_in_tree,
+    compute_nullifier, hash, inputs_outputs_preserve_invariants, is_in_tree,
     types::{Nonce, PrivacyExecutionOutput, ProgramId, ProgramOutput},
     visibility::AccountVisibility,
 };
@@ -31,7 +31,6 @@ fn main() {
     // Read inner program output
     let inner_program_output: ProgramOutput = env::read();
     let num_inputs = inner_program_output.accounts_pre.len();
-    assert_eq!(inner_program_output.accounts_post.len(), num_inputs);
 
     // Read visibilities
     let account_visibilities: Vec<AccountVisibility> = env::read();
@@ -45,14 +44,14 @@ fn main() {
     let commitment_tree_root: [u32; 8] = env::read();
     let program_id: ProgramId = env::read();
 
-    // Verify pre states and post states of accounts are consistent
-    // with the execution of the `program_id` program
-    env::verify(program_id, &to_vec(&inner_program_output).unwrap()).unwrap();
-
-    let inputs = inner_program_output.accounts_pre;
-    let mut outputs = inner_program_output.accounts_post;
+    // Authentication step:
+    // Check private accounts are owned by caller and that they are consistent
+    // with the commitments tree.
     let mut nullifiers = Vec::new();
-    for (visibility, input_account) in account_visibilities.iter().zip(inputs.iter()) {
+    for (visibility, input_account) in account_visibilities
+        .iter()
+        .zip(inner_program_output.accounts_pre.iter())
+    {
         match visibility {
             AccountVisibility::Private(Some((private_key, auth_path))) => {
                 // Prove ownership of input accounts by proving knowledge of the pre-image of their addresses.
@@ -75,28 +74,29 @@ fn main() {
         }
     }
 
-    // Assert that the inner program didn't modify address fields or nonces
-    for (account_pre, account_post) in inputs.iter().zip(outputs.iter()) {
-        assert_eq!(account_pre.address, account_post.address);
-        assert_eq!(account_pre.nonce, account_post.nonce);
-    }
+    // Verify pre states and post states of accounts are consistent
+    // with the execution of the `program_id` program
+    env::verify(program_id, &to_vec(&inner_program_output).unwrap()).unwrap();
 
-    // Check that the program preserved the total supply
-    let total_balance_pre: u128 = inputs.iter().map(|account| account.balance).sum();
-    let total_balance_post: u128 = outputs.iter().map(|account| account.balance).sum();
-    assert_eq!(total_balance_pre, total_balance_post);
+    // Assert accounts pre- and post-states preserve chains invariants
+    assert!(inputs_outputs_preserve_invariants(
+        &inner_program_output.accounts_pre,
+        &inner_program_output.accounts_post
+    ));
 
     // From this point on the execution is considered valid
     //
     // Insert new nonces in outputs (including public ones)
-    outputs
+    let accounts_pre = inner_program_output.accounts_pre;
+    let mut accounts_post = inner_program_output.accounts_post;
+    accounts_post
         .iter_mut()
         .zip(output_nonces)
         .for_each(|(account, new_nonce)| account.nonce = new_nonce);
 
     // Compute commitments for every private output
     let mut private_outputs = Vec::new();
-    for (output, visibility) in outputs.iter().zip(account_visibilities.iter()) {
+    for (output, visibility) in accounts_post.iter().zip(account_visibilities.iter()) {
         match visibility {
             AccountVisibility::Public => continue,
             AccountVisibility::Private(_) => private_outputs.push(output),
@@ -107,8 +107,10 @@ fn main() {
     // Get the list of public accounts pre and post states
     let mut public_accounts_pre = Vec::new();
     let mut public_accounts_post = Vec::new();
-    for ((account_pre, account_post), visibility) in
-        inputs.into_iter().zip(outputs.into_iter()).zip(account_visibilities)
+    for ((account_pre, account_post), visibility) in accounts_pre
+        .into_iter()
+        .zip(accounts_post.into_iter())
+        .zip(account_visibilities)
     {
         match visibility {
             AccountVisibility::Public => {
