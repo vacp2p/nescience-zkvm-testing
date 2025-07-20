@@ -32,10 +32,10 @@ impl MockedClient {
         visibilities: &[AccountVisibility],
         commitment_tree_root: [u32; 8],
         sequencer: &mut MockedSequencer,
-    ) -> Result<Vec<Account>, ()> {
+    ) -> Result<Vec<Account>, nssa::Error> {
         // Execute and generate proof of the outer program
         let (receipt, private_outputs) =
-            nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root).unwrap();
+            nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root)?;
 
         // Send proof to the sequencer
         sequencer.process_privacy_execution(receipt)?;

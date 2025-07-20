@@ -14,12 +14,14 @@ impl MockedClient {
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Result<Account, ()> {
+    ) -> Result<Account, nssa::Error> {
         // Fetch commitment tree root from the sequencer
         let commitment_tree_root = sequencer.get_commitment_tree_root();
 
         // Fetch sender account from the sequencer
-        let from_account = sequencer.get_account(&self.user_address()).ok_or(())?;
+        let from_account = sequencer
+            .get_account(&self.user_address())
+            .ok_or(nssa::Error::Generic)?;
 
         // Create a new default private account for the receiver
         let to_account = Self::fresh_account_for_mint(*to_address);

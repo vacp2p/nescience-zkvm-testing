@@ -1,7 +1,4 @@
-use core::{
-    account::Account,
-    types::{Address, ProgramOutput},
-};
+use core::{account::Account, types::Address};
 
 use super::MockedSequencer;
 
@@ -11,11 +8,11 @@ impl MockedSequencer {
         &mut self,
         input_account_addresses: &[Address],
         instruction_data: P::InstructionData,
-    ) -> Result<(), ()> {
+    ) -> Result<(), nssa::Error> {
         // Fetch the current state of the input accounts.
         let input_accounts: Vec<Account> = input_account_addresses
             .iter()
-            .map(|address| self.get_account(address).ok_or(()))
+            .map(|address| self.get_account(address).ok_or(nssa::Error::Generic))
             .collect::<Result<_, _>>()?;
 
         // Execute the program
@@ -23,7 +20,7 @@ impl MockedSequencer {
 
         // Perform consistency checks
         if !self.program_output_is_valid(&input_accounts, &program_output.accounts_post) {
-            return Err(());
+            return Err(nssa::Error::Generic);
         }
 
         // Update the accounts states

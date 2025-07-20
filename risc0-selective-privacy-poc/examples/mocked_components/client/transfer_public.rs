@@ -10,7 +10,7 @@ impl MockedClient {
         to_address: &Address,
         amount_to_transfer: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Result<(), ()> {
+    ) -> Result<(), nssa::Error> {
         // Submit a public (on-chain) execution of the Transfer program to the sequencer
         sequencer.process_public_execution::<TransferProgram>(&[self.user_address(), *to_address], amount_to_transfer)
     }

@@ -7,7 +7,9 @@ use program_methods::{OUTER_ELF, OUTER_ID};
 use rand::{rngs::OsRng, Rng};
 use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, ExecutorEnvBuilder, Receipt};
 
+pub mod error;
 pub mod program;
+pub use error::Error;
 
 pub use program::Program;
 
@@ -21,10 +23,10 @@ fn write_inputs<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
     env_builder: &mut ExecutorEnvBuilder,
-) -> Result<(), ()> {
+) -> Result<(), Error> {
     let input_accounts = input_accounts.to_vec();
-    env_builder.write(&input_accounts).map_err(|_| ())?;
-    env_builder.write(&instruction_data).map_err(|_| ())?;
+    env_builder.write(&input_accounts).map_err(|_| Error::Generic)?;
+    env_builder.write(&instruction_data).map_err(|_| Error::Generic)?;
     Ok(())
 }
 
@@ -33,7 +35,7 @@ fn write_inputs<P: Program>(
 fn execute_and_prove_inner<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
-) -> Result<Receipt, ()> {
+) -> Result<Receipt, Error> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
     write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
@@ -41,7 +43,7 @@ fn execute_and_prove_inner<P: Program>(
 
     // Prove the program
     let prover = default_prover();
-    let prove_info = prover.prove(env, P::PROGRAM_ELF).map_err(|_| ())?;
+    let prove_info = prover.prove(env, P::PROGRAM_ELF).map_err(|_| Error::Generic)?;
     Ok(prove_info.receipt)
 }
 
@@ -71,7 +73,7 @@ fn build_private_outputs_from_inner_results(
 pub fn execute_onchain<P: Program>(
     input_accounts: &[Account],
     instruction_data: P::InstructionData,
-) -> Result<ProgramOutput, ()> {
+) -> Result<ProgramOutput, Error> {
     // Write inputs to the program
     let mut env_builder = ExecutorEnv::builder();
     write_inputs::<P>(input_accounts, instruction_data, &mut env_builder)?;
@@ -79,10 +81,10 @@ pub fn execute_onchain<P: Program>(
 
     // Execute the program (without proving)
     let executor = default_executor();
-    let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| ())?;
+    let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| Error::Generic)?;
 
     // Get (inputs and) outputs
-    session_info.journal.decode().map_err(|_| ())
+    session_info.journal.decode().map_err(|_| Error::Generic)
 }
 
 /// Executes and proves the inner program `P` and executes and proves the outer program on top of it.
@@ -93,10 +95,10 @@ pub fn execute_offchain<P: Program>(
     instruction_data: P::InstructionData,
     visibilities: &[AccountVisibility],
     commitment_tree_root: [u32; 8],
-) -> Result<(Receipt, Vec<Account>), ()> {
+) -> Result<(Receipt, Vec<Account>), Error> {
     // Prove inner program and get post state of the accounts
     let inner_receipt = execute_and_prove_inner::<P>(inputs, instruction_data)?;
-    let inner_program_output: ProgramOutput = inner_receipt.journal.decode().map_err(|_| ())?;
+    let inner_program_output: ProgramOutput = inner_receipt.journal.decode().map_err(|_| Error::Generic)?;
 
     // Sample fresh random nonces for the outputs of this execution
     let output_nonces: Vec<_> = (0..inputs.len()).map(|_| new_random_nonce()).collect();
@@ -120,6 +122,6 @@ pub fn execute_offchain<P: Program>(
 }
 
 /// Verifies a proof of the outer program for the given parameters.
-pub fn verify_privacy_execution(receipt: Receipt) -> Result<(), ()> {
-    receipt.verify(OUTER_ID).map_err(|_| ())
+pub fn verify_privacy_execution(receipt: Receipt) -> Result<(), Error> {
+    receipt.verify(OUTER_ID).map_err(|_| Error::Generic)
 }

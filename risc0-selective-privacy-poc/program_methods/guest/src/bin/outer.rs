@@ -1,5 +1,4 @@
 use core::{
-    account::Account,
     compute_nullifier, hash, is_in_tree,
     types::{Nonce, PrivacyExecutionOutput, ProgramId, ProgramOutput},
     visibility::AccountVisibility,
@@ -29,8 +28,8 @@ use risc0_zkvm::{guest::env, serde::to_vec};
 /// - The commitments for the ouput private accounts.
 /// - The commitment tree root used for the authentication path verifications.
 fn main() {
-    // Read inputs and outputs
-    let mut inner_program_output: ProgramOutput = env::read();
+    // Read inner program output
+    let inner_program_output: ProgramOutput = env::read();
     let num_inputs = inner_program_output.accounts_pre.len();
     assert_eq!(inner_program_output.accounts_post.len(), num_inputs);
 

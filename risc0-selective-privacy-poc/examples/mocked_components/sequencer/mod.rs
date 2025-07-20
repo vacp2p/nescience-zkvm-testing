@@ -64,11 +64,6 @@ impl MockedSequencer {
             .try_into()
             .unwrap()
     }
-
-    /// Returns the list of all registered addresses
-    pub fn addresses(&self) -> Vec<Address> {
-        self.accounts.keys().cloned().collect()
-    }
 }
 
 /// Pretty prints the chain's state

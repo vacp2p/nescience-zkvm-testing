@@ -5,13 +5,9 @@ use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
 
 const TREE_DEPTH: usize = 32;
-const ZERO_HASH: [u8; 32] = [
-    110, 52, 11, 156, 255, 179, 122, 152, 156, 165, 68, 230, 187, 120, 10, 44, 120, 144, 29, 63,
-    179, 55, 56, 118, 133, 17, 163, 6, 23, 175, 160, 29,
-];
 const ONE_HASH: [u8; 32] = [
-    75, 245, 18, 47, 52, 69, 84, 197, 59, 222, 46, 187, 140, 210, 183, 227, 209, 96, 10, 214, 49,
-    195, 133, 165, 215, 204, 226, 60, 119, 133, 69, 154,
+    75, 245, 18, 47, 52, 69, 84, 197, 59, 222, 46, 187, 140, 210, 183, 227, 209, 96, 10, 214, 49, 195, 133, 165, 215,
+    204, 226, 60, 119, 133, 69, 154,
 ];
 
 /// Compute parent as the hash of two child nodes
@@ -65,12 +61,8 @@ impl SparseMerkleTree {
                 let left_index = parent_index << 1;
                 let right_index = left_index | 1;
 
-                let left = nodes
-                    .get(&(depth + 1, left_index))
-                    .unwrap_or(&DEFAULT_HASHES[depth]);
-                let right = nodes
-                    .get(&(depth + 1, right_index))
-                    .unwrap_or(&DEFAULT_HASHES[depth]);
+                let left = nodes.get(&(depth + 1, left_index)).unwrap_or(&DEFAULT_HASHES[depth]);
+                let right = nodes.get(&(depth + 1, right_index)).unwrap_or(&DEFAULT_HASHES[depth]);
 
                 if left != &DEFAULT_HASHES[depth] || right != &DEFAULT_HASHES[depth] {
                     let h = hash_node(left, right);
@@ -84,10 +76,7 @@ impl SparseMerkleTree {
     }
 
     pub fn root(&self) -> [u8; 32] {
-        self.node_map
-            .get(&(0, 0))
-            .cloned()
-            .unwrap_or(DEFAULT_HASHES[0])
+        self.node_map.get(&(0, 0)).cloned().unwrap_or(DEFAULT_HASHES[0])
     }
 
     pub fn get_authentication_path_for_value(&self, value: u32) -> [[u8; 32]; 32] {
@@ -133,14 +122,20 @@ impl SparseMerkleTree {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const ZERO_HASH: [u8; 32] = [
+        110, 52, 11, 156, 255, 179, 122, 152, 156, 165, 68, 230, 187, 120, 10, 44, 120, 144, 29, 63, 179, 55, 56, 118,
+        133, 17, 163, 6, 23, 175, 160, 29,
+    ];
+
     #[test]
     fn test_default_hashes() {
         assert_eq!(DEFAULT_HASHES[TREE_DEPTH - 1], ZERO_HASH);
         assert_eq!(
             DEFAULT_HASHES[0],
             [
-                157, 148, 193, 146, 141, 23, 128, 25, 196, 90, 21, 193, 179, 235, 209, 157, 146,
-                64, 171, 100, 192, 44, 121, 46, 78, 53, 190, 198, 191, 82, 85, 16
+                157, 148, 193, 146, 141, 23, 128, 25, 196, 90, 21, 193, 179, 235, 209, 157, 146, 64, 171, 100, 192, 44,
+                121, 46, 78, 53, 190, 198, 191, 82, 85, 16
             ]
         );
     }
@@ -158,8 +153,8 @@ mod tests {
         assert_eq!(
             tree.root(),
             [
-                109, 94, 224, 93, 195, 77, 137, 36, 108, 105, 177, 22, 212, 17, 160, 255, 224, 61,
-                191, 17, 129, 10, 26, 76, 197, 42, 230, 160, 80, 44, 101, 184
+                109, 94, 224, 93, 195, 77, 137, 36, 108, 105, 177, 22, 212, 17, 160, 255, 224, 61, 191, 17, 129, 10,
+                26, 76, 197, 42, 230, 160, 80, 44, 101, 184
             ]
         );
     }
@@ -174,8 +169,8 @@ mod tests {
         assert_eq!(
             tree.root(),
             [
-                36, 178, 159, 245, 165, 76, 242, 85, 25, 218, 149, 135, 194, 127, 130, 201, 219,
-                187, 167, 216, 1, 222, 234, 197, 152, 156, 243, 174, 68, 27, 114, 8
+                36, 178, 159, 245, 165, 76, 242, 85, 25, 218, 149, 135, 194, 127, 130, 201, 219, 187, 167, 216, 1, 222,
+                234, 197, 152, 156, 243, 174, 68, 27, 114, 8
             ]
         );
     }
@@ -188,8 +183,8 @@ mod tests {
         assert_eq!(
             tree.root(),
             [
-                148, 76, 190, 191, 248, 243, 89, 40, 197, 157, 206, 23, 58, 197, 86, 169, 225, 217,
-                110, 166, 54, 10, 245, 175, 168, 4, 145, 220, 30, 210, 67, 113
+                148, 76, 190, 191, 248, 243, 89, 40, 197, 157, 206, 23, 58, 197, 86, 169, 225, 217, 110, 166, 54, 10,
+                245, 175, 168, 4, 145, 220, 30, 210, 67, 113
             ]
         );
     }

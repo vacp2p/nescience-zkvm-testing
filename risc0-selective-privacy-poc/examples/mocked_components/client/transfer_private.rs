@@ -15,7 +15,7 @@ impl MockedClient {
         to_address: &Address,
         balance_to_move: u128,
         sequencer: &mut MockedSequencer,
-    ) -> Result<[Account; 2], ()> {
+    ) -> Result<[Account; 2], nssa::Error> {
         // Fetch commitment tree root from the sequencer
         let commitment_tree_root = sequencer.get_commitment_tree_root();
         // Compute authenticaton path for the input private account
