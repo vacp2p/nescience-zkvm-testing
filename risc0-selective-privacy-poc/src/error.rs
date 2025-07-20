@@ -1,13 +1,14 @@
 #[derive(Debug)]
 pub enum Error {
-    /// For simplicity, this POC uses a generic error
-    Generic,
+    BadInput,
+    Risc0(String),
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Generic => write!(f, "An unexpected error occurred"),
+            Error::BadInput => write!(f, "Bad input"),
+            Error::Risc0(_) => write!(f, "Risc0 error"),
         }
     }
 }

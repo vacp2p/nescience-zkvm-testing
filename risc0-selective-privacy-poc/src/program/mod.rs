@@ -30,6 +30,6 @@ pub struct PinataProgram;
 impl Program for PinataProgram {
     const PROGRAM_ID: ProgramId = PINATA_ID;
     const PROGRAM_ELF: &[u8] = PINATA_ELF;
-    /// Preimage of target hash to win price
+    /// Preimage of target hash to win prize
     type InstructionData = Vec<u32>;
 }

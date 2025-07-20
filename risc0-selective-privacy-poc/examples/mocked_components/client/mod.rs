@@ -38,7 +38,7 @@ impl MockedClient {
         // Execute and generate proof of the outer program
         let (receipt, private_outputs) =
             nssa::execute_offchain::<P>(input_accounts, instruction_data, visibilities, commitment_tree_root)
-                .map_err(|_| Error::Generic)?;
+                .map_err(|_| Error::BadInput)?;
 
         // Send proof to the sequencer
         sequencer.process_privacy_execution(receipt)?;

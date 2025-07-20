@@ -1,5 +1,7 @@
 use core::{account::Account, types::Address};
 
+use crate::mocked_components::sequencer::error::Error;
+
 use super::MockedSequencer;
 
 impl MockedSequencer {
@@ -8,19 +10,20 @@ impl MockedSequencer {
         &mut self,
         input_account_addresses: &[Address],
         instruction_data: P::InstructionData,
-    ) -> Result<(), nssa::Error> {
+    ) -> Result<(), Error> {
         // Fetch the current state of the input accounts.
         let input_accounts: Vec<Account> = input_account_addresses
             .iter()
-            .map(|address| self.get_account(address).ok_or(nssa::Error::Generic))
+            .map(|address| self.get_account(address).ok_or(Error::NotFound))
             .collect::<Result<_, _>>()?;
 
         // Execute the program
-        let program_output = nssa::execute_onchain::<P>(&input_accounts, instruction_data)?;
+        let program_output =
+            nssa::execute_onchain::<P>(&input_accounts, instruction_data).map_err(|_| Error::BadInput)?;
 
         // Perform consistency checks
         if !self.program_output_is_valid(&input_accounts, &program_output.accounts_post) {
-            return Err(nssa::Error::Generic);
+            return Err(Error::BadInput);
         }
 
         // Update the accounts states

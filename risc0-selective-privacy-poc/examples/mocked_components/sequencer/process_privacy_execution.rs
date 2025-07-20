@@ -14,20 +14,20 @@ impl MockedSequencer {
 
         // Reject in case the root used in the privacy execution is not the current root.
         if output.commitment_tree_root != self.get_commitment_tree_root() {
-            return Err(Error::Generic);
+            return Err(Error::BadInput);
         }
 
         // Reject in case the number of accounts pre states is different from the post states
         if output.public_accounts_pre.len() != output.public_accounts_post.len() {
-            return Err(Error::Generic);
+            return Err(Error::BadInput);
         }
 
         // Reject if the states of the public input accounts used in the inner execution do not
         // coincide with the on-chain state.
         for account in output.public_accounts_pre.iter() {
-            let current_account = self.get_account(&account.address).ok_or(Error::Generic)?;
+            let current_account = self.get_account(&account.address).ok_or(Error::NotFound)?;
             if &current_account != account {
-                return Err(Error::Generic);
+                return Err(Error::BadInput);
             }
         }
 
@@ -37,7 +37,7 @@ impl MockedSequencer {
             .iter()
             .any(|nullifier| self.nullifier_set.contains(nullifier))
         {
-            return Err(Error::Generic);
+            return Err(Error::BadInput);
         }
 
         // Reject if the commitments have already been seen.
@@ -46,7 +46,7 @@ impl MockedSequencer {
             .iter()
             .any(|commitment| self.commitment_tree.values().contains(commitment))
         {
-            return Err(Error::Generic);
+            return Err(Error::BadInput);
         }
 
         // Verify the proof of the privacy execution.
@@ -56,7 +56,7 @@ impl MockedSequencer {
         // - The given nullifiers correctly correspond to commitments that currently belong to
         //   the commitment tree.
         // - The given commitments are correctly computed from valid accounts.
-        nssa::verify_privacy_execution(receipt).map_err(|_| Error::Generic)?;
+        nssa::verify_privacy_execution(receipt).map_err(|_| Error::BadInput)?;
 
         // At this point the privacy execution is considered valid.
         //

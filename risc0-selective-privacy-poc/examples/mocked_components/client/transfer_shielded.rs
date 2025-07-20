@@ -18,7 +18,7 @@ impl MockedClient {
         let commitment_tree_root = sequencer.get_commitment_tree_root();
 
         // Fetch sender account from the sequencer
-        let from_account = sequencer.get_account(&self.user_address()).ok_or(Error::Generic)?;
+        let from_account = sequencer.get_account(&self.user_address()).ok_or(Error::NotFound)?;
 
         // Create a new default private account for the receiver
         let to_account = Self::fresh_account_for_mint(*to_address);

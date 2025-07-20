@@ -25,8 +25,8 @@ fn write_inputs<P: Program>(
     env_builder: &mut ExecutorEnvBuilder,
 ) -> Result<(), Error> {
     let input_accounts = input_accounts.to_vec();
-    env_builder.write(&input_accounts).map_err(|_| Error::Generic)?;
-    env_builder.write(&instruction_data).map_err(|_| Error::Generic)?;
+    env_builder.write(&input_accounts).map_err(|_| Error::BadInput)?;
+    env_builder.write(&instruction_data).map_err(|_| Error::BadInput)?;
     Ok(())
 }
 
@@ -43,7 +43,9 @@ fn execute_and_prove_inner<P: Program>(
 
     // Prove the program
     let prover = default_prover();
-    let prove_info = prover.prove(env, P::PROGRAM_ELF).map_err(|_| Error::Generic)?;
+    let prove_info = prover
+        .prove(env, P::PROGRAM_ELF)
+        .map_err(|e| Error::Risc0(e.to_string()))?;
     Ok(prove_info.receipt)
 }
 
@@ -81,10 +83,12 @@ pub fn execute_onchain<P: Program>(
 
     // Execute the program (without proving)
     let executor = default_executor();
-    let session_info = executor.execute(env, P::PROGRAM_ELF).map_err(|_| Error::Generic)?;
+    let session_info = executor
+        .execute(env, P::PROGRAM_ELF)
+        .map_err(|e| Error::Risc0(e.to_string()))?;
 
     // Get (inputs and) outputs
-    session_info.journal.decode().map_err(|_| Error::Generic)
+    session_info.journal.decode().map_err(|e| Error::Risc0(e.to_string()))
 }
 
 /// Executes and proves the inner program `P` and executes and proves the outer program on top of it.
@@ -98,7 +102,10 @@ pub fn execute_offchain<P: Program>(
 ) -> Result<(Receipt, Vec<Account>), Error> {
     // Prove inner program and get post state of the accounts
     let inner_receipt = execute_and_prove_inner::<P>(inputs, instruction_data)?;
-    let inner_program_output: ProgramOutput = inner_receipt.journal.decode().map_err(|_| Error::Generic)?;
+    let inner_program_output: ProgramOutput = inner_receipt
+        .journal
+        .decode()
+        .map_err(|e| Error::Risc0(e.to_string()))?;
 
     // Sample fresh random nonces for the outputs of this execution
     let output_nonces: Vec<_> = (0..inputs.len()).map(|_| new_random_nonce()).collect();
@@ -123,5 +130,5 @@ pub fn execute_offchain<P: Program>(
 
 /// Verifies a proof of the outer program for the given parameters.
 pub fn verify_privacy_execution(receipt: Receipt) -> Result<(), Error> {
-    receipt.verify(OUTER_ID).map_err(|_| Error::Generic)
+    receipt.verify(OUTER_ID).map_err(|e| Error::Risc0(e.to_string()))
 }
