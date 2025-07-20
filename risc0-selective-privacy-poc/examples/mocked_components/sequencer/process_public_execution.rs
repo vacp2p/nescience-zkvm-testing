@@ -40,6 +40,7 @@ impl MockedSequencer {
         program_output.accounts_post.into_iter().for_each(|account_post_state| {
             self.accounts.insert(account_post_state.address, account_post_state);
         });
+
         Ok(())
     }
 }

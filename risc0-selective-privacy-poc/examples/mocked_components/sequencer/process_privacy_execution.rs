@@ -12,16 +12,6 @@ impl MockedSequencer {
         // Parse the output of the "outer" program
         let output: PrivacyExecutionOutput = receipt.journal.decode().unwrap();
 
-        // Reject in case the root used in the privacy execution is not the current root.
-        if output.commitment_tree_root != self.get_commitment_tree_root() {
-            return Err(Error::BadInput);
-        }
-
-        // Reject in case the number of accounts pre states is different from the post states
-        if output.public_accounts_pre.len() != output.public_accounts_post.len() {
-            return Err(Error::BadInput);
-        }
-
         // Reject if the states of the public input accounts used in the inner execution do not
         // coincide with the on-chain state.
         for account in output.public_accounts_pre.iter() {
@@ -29,6 +19,11 @@ impl MockedSequencer {
             if &current_account != account {
                 return Err(Error::BadInput);
             }
+        }
+
+        // Reject in case the root used in the privacy execution is not the current root.
+        if output.commitment_tree_root != self.get_commitment_tree_root() {
+            return Err(Error::BadInput);
         }
 
         // Reject if the nullifiers of this privacy execution have already been published.
@@ -56,6 +51,7 @@ impl MockedSequencer {
         // - The given nullifiers correctly correspond to commitments that currently belong to
         //   the commitment tree.
         // - The given commitments are correctly computed from valid accounts.
+        // - The chain invariants are preserved
         nssa::verify_privacy_execution(receipt).map_err(|_| Error::BadInput)?;
 
         // At this point the privacy execution is considered valid.
