@@ -26,16 +26,6 @@ impl MockedSequencer {
             return Err(Error::BadInput);
         }
 
-        // Fail if any of the output accounts is not yet registered.
-        // This is redundant with previous checks, but better make it explicit.
-        if !program_output
-            .accounts_post
-            .iter()
-            .all(|account| self.accounts.contains_key(&account.address))
-        {
-            return Err(Error::BadInput);
-        }
-
         // Update the accounts states
         program_output.accounts_post.into_iter().for_each(|account_post_state| {
             self.accounts.insert(account_post_state.address, account_post_state);
