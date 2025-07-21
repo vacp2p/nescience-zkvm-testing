@@ -2,6 +2,8 @@ pub mod account;
 pub mod types;
 pub mod visibility;
 
+use std::collections::HashSet;
+
 use crate::{
     account::Account,
     types::{AuthenticationPath, Commitment, Key, Nullifier, ProgramId},
@@ -59,7 +61,7 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
 /// - does not change account addresses
 /// - does not change account nonces
 /// - does not change the `program_owner` field
-/// - only reduces the balance of accounts it owns 
+/// - only reduces the balance of accounts it owns
 /// - preserves the total token supply across all accounts
 ///
 /// This function does **not** check that the output accounts are the result of correctly
@@ -102,6 +104,20 @@ pub fn check_well_behaved_account_transition(
     let total_balance_pre: u128 = input_accounts.iter().map(|account| account.balance).sum();
     let total_balance_post: u128 = output_accounts.iter().map(|account| account.balance).sum();
     if total_balance_pre != total_balance_post {
+        return false;
+    }
+    // The previous check is only meaningful if the accounts involved in the sum are all different
+    // otherwise the same balance is counted more than once in the total balance check. Therefore, we need to check
+    // that the set of input accounts doesn't have repeated pairs of (address, nonce).
+    // Note: Checking only that addresses are unique would be too restrictive, since different private accounts can have
+    // the same address (but different nonces).
+    if input_accounts
+        .iter()
+        .map(|account| (account.address, account.nonce))
+        .collect::<HashSet<_>>()
+        .len()
+        != input_accounts.len()
+    {
         return false;
     }
 

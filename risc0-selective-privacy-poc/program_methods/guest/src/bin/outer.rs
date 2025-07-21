@@ -10,13 +10,10 @@ use risc0_zkvm::{guest::env, serde::to_vec};
 /// It also verifies that the chain's invariants are not violated and the program is well-behaved.
 ///
 /// Inputs:
-/// - ProgramOuptut: The output of the inner program. This is includes the accounts pre and
-///     post-states of the execution of the inner program.
+/// - ProgramOuptut: The output of the inner program. This is includes the accounts pre and post-states of the execution of the inner program.
 /// - Vec<AccountVisibility>: A vector indicating which accounts are private and which are public.
-/// - Vec<Nonce>: The vector of nonces to be used for the output accounts. This is assumed to be
-///     sampled at random by the host program.
-/// - [u32; 8]: The root of the commitment tree. Commitments of input private accounts will be
-///     checked against this to prove that they belong to the tree.
+/// - Vec<Nonce>: The vector of nonces to be used for the output accounts. This is assumed to be sampled at random by the host program.
+/// - [u32; 8]: The root of the commitment tree. Commitments of input private accounts will be checked against this to prove that they belong to the tree.
 /// - ProgamId: The ID of the inner program.
 ///
 /// Public outputs:
@@ -75,13 +72,18 @@ fn assemble_privacy_execution_output(
     commitment_tree_root: [u32; 8],
     nullifiers: Vec<[u32; 8]>,
 ) -> PrivacyExecutionOutput {
-    // Insert new nonces in outputs (including public ones)
+    // Insert new nonces in private outputs
     let accounts_pre = inner_program_output.accounts_pre;
     let mut accounts_post = inner_program_output.accounts_post;
     accounts_post
         .iter_mut()
         .zip(output_nonces)
-        .for_each(|(account, new_nonce)| account.nonce = new_nonce);
+        .zip(visibilities.iter())
+        .for_each(|((account, new_nonce), visibility)| {
+            if matches!(visibility, AccountVisibility::Private(_)) {
+                account.nonce = new_nonce;
+            }
+        });
 
     // Compute commitments for every private output
     let mut private_outputs = Vec::new();
@@ -110,20 +112,19 @@ fn assemble_privacy_execution_output(
         }
     }
 
-    let output = PrivacyExecutionOutput {
+    PrivacyExecutionOutput {
         public_accounts_pre,
         public_accounts_post,
         private_output_commitments,
         nullifiers,
         commitment_tree_root,
-    };
-    output
+    }
 }
 
 /// Compute nullifiers of private accounts pre states and check that their commitments belong to the commitments tree
 fn verify_and_nullify_private_inputs(
     inner_program_output: &ProgramOutput,
-    account_visibilities: &Vec<AccountVisibility>,
+    account_visibilities: &[AccountVisibility],
     commitment_tree_root: [u32; 8],
 ) -> Vec<[u32; 8]> {
     let mut nullifiers = Vec::new();
