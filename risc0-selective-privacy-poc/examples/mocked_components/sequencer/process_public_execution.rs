@@ -1,4 +1,4 @@
-use core::{account::Account, post_execution_consistency_checks, types::Address};
+use core::{account::Account, check_well_behaved_account_transition, types::Address};
 
 use crate::mocked_components::sequencer::error::Error;
 
@@ -22,7 +22,7 @@ impl MockedSequencer {
             nssa::execute_onchain::<P>(&input_accounts, instruction_data).map_err(|_| Error::BadInput)?;
 
         // Assert accounts pre- and post-states preserve chains invariants
-        if !post_execution_consistency_checks(&input_accounts, &program_output.accounts_post, P::PROGRAM_ID) {
+        if !check_well_behaved_account_transition(&input_accounts, &program_output.accounts_post, P::PROGRAM_ID) {
             return Err(Error::BadInput);
         }
 

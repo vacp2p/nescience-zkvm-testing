@@ -1,5 +1,5 @@
 use core::{
-    compute_nullifier, hash, is_in_tree, post_execution_consistency_checks,
+    check_well_behaved_account_transition, compute_nullifier, hash, is_in_tree,
     types::{Nonce, PrivacyExecutionOutput, ProgramId, ProgramOutput},
     visibility::AccountVisibility,
 };
@@ -7,18 +7,15 @@ use risc0_zkvm::{guest::env, serde::to_vec};
 
 /// Privacy execution logic.
 /// This is the circuit for proving correct off-chain executions of programs.
-/// It also verifies that the chain's invariants are not violated.
+/// It also verifies that the chain's invariants are not violated and the program is well-behaved.
 ///
 /// Inputs:
-/// - Vec<Account>: The output of the inner program. This is assumed to include the accounts pre and
+/// - ProgramOuptut: The output of the inner program. This is includes the accounts pre and
 ///     post-states of the execution of the inner program.
-///
 /// - Vec<AccountVisibility>: A vector indicating which accounts are private and which are public.
-///
 /// - Vec<Nonce>: The vector of nonces to be used for the output accounts. This is assumed to be
 ///     sampled at random by the host program.
-///
-/// - [u32; 8]: The root of the commitment tree. Commitments of used private accounts will be
+/// - [u32; 8]: The root of the commitment tree. Commitments of input private accounts will be
 ///     checked against this to prove that they belong to the tree.
 /// - ProgamId: The ID of the inner program.
 ///
@@ -52,7 +49,7 @@ fn main() {
     env::verify(program_id, &to_vec(&inner_program_output).unwrap()).unwrap();
 
     // Assert accounts pre- and post-states preserve chains invariants
-    assert!(post_execution_consistency_checks(
+    assert!(check_well_behaved_account_transition(
         &inner_program_output.accounts_pre,
         &inner_program_output.accounts_post,
         program_id

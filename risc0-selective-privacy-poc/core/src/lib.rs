@@ -53,10 +53,19 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
     words
 }
 
-/// Verifies that a program public execution didn't break the chain's rules.
-/// `input_accounts` are the accounts provided as inputs to the program.
-/// `output_accounts` are the accounts post states after execution of the program
-pub fn post_execution_consistency_checks(
+/// Ensures that account transitions follow the rules of a well-behaved program.
+///
+/// A well-behaved program is one that:
+/// - does not change account addresses
+/// - does not change account nonces
+/// - does not change the `program_owner` field
+/// - only reduces the balance of accounts it owns 
+/// - preserves the total token supply across all accounts
+///
+/// This function does **not** check that the output accounts are the result of correctly
+/// executing the program. That must be checked separately, either by re-executing
+/// the program with the inputs or by verifying a proof of correct execution.
+pub fn check_well_behaved_account_transition(
     input_accounts: &[Account],
     output_accounts: &[Account],
     program_id: ProgramId,
@@ -71,6 +80,7 @@ pub fn post_execution_consistency_checks(
         if account_pre.address != account_post.address {
             return false;
         }
+
         // Fail if the program modified the nonces of the input accounts
         if account_pre.nonce != account_post.nonce {
             return false;
