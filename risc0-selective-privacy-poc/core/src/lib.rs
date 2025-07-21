@@ -56,7 +56,7 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
 /// Verifies that a program public execution didn't break the chain's rules.
 /// `input_accounts` are the accounts provided as inputs to the program.
 /// `output_accounts` are the accounts post states after execution of the program
-pub fn inputs_outputs_preserve_invariants(
+pub fn post_execution_consistency_checks(
     input_accounts: &[Account],
     output_accounts: &[Account],
     program_id: ProgramId,

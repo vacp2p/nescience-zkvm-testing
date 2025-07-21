@@ -1,5 +1,5 @@
 use core::{
-    compute_nullifier, hash, inputs_outputs_preserve_invariants, is_in_tree,
+    compute_nullifier, hash, is_in_tree, post_execution_consistency_checks,
     types::{Nonce, PrivacyExecutionOutput, ProgramId, ProgramOutput},
     visibility::AccountVisibility,
 };
@@ -52,7 +52,7 @@ fn main() {
     env::verify(program_id, &to_vec(&inner_program_output).unwrap()).unwrap();
 
     // Assert accounts pre- and post-states preserve chains invariants
-    assert!(inputs_outputs_preserve_invariants(
+    assert!(post_execution_consistency_checks(
         &inner_program_output.accounts_pre,
         &inner_program_output.accounts_post,
         program_id
