@@ -22,7 +22,7 @@ impl MockedSequencer {
             nssa::execute_onchain::<P>(&input_accounts, instruction_data).map_err(|_| Error::BadInput)?;
 
         // Assert accounts pre- and post-states preserve chains invariants
-        if !inputs_outputs_preserve_invariants(&input_accounts, &program_output.accounts_post) {
+        if !inputs_outputs_preserve_invariants(&input_accounts, &program_output.accounts_post, P::PROGRAM_ID) {
             return Err(Error::BadInput);
         }
 

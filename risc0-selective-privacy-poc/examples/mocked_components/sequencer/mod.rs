@@ -5,6 +5,7 @@ use core::{
 };
 use std::collections::{BTreeMap, HashSet};
 
+use nssa::{program::PinataProgram, Program};
 use sparse_merkle_tree::SparseMerkleTree;
 
 use crate::mocked_components::USER_CLIENTS;
@@ -33,7 +34,14 @@ impl MockedSequencer {
             .map(|account| (account.address, account))
             .collect();
 
-        let pinata_account = Account::new(PINATA_ADDRESS, INITIAL_BALANCE);
+        let pinata_account = {
+            let mut this = Account::new(PINATA_ADDRESS, INITIAL_BALANCE);
+            // Set the owner of the Pinata account so that only the Pinata program
+            // can reduce its balance.
+            this.program_owner = Some(PinataProgram::PROGRAM_ID);
+            this
+        };
+
         accounts.insert(pinata_account.address, pinata_account);
 
         let commitment_tree = SparseMerkleTree::new_empty();

@@ -54,7 +54,8 @@ fn main() {
     // Assert accounts pre- and post-states preserve chains invariants
     assert!(inputs_outputs_preserve_invariants(
         &inner_program_output.accounts_pre,
-        &inner_program_output.accounts_post
+        &inner_program_output.accounts_post,
+        program_id
     ));
 
     // From this point on the execution is considered valid

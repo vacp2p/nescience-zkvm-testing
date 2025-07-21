@@ -1,6 +1,6 @@
 use crate::{
     hash,
-    types::{Address, Commitment, Key, Nonce},
+    types::{Address, Commitment, Key, Nonce, ProgramId},
 };
 use risc0_zkvm::serde::to_vec;
 use serde::{Deserialize, Serialize};
@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 /// Account to be used both in public and private contexts
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Account {
+    pub program_owner: Option<ProgramId>,
     pub address: Address,
     pub balance: u128,
     pub nonce: Nonce,
@@ -16,6 +17,7 @@ pub struct Account {
 impl Account {
     pub fn new(address: Address, balance: u128) -> Self {
         Self {
+            program_owner: None,
             address,
             balance,
             nonce: [0; 8],

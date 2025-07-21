@@ -2,7 +2,10 @@ pub mod account;
 pub mod types;
 pub mod visibility;
 
-use crate::{account::Account, types::{AuthenticationPath, Commitment, Key, Nullifier}};
+use crate::{
+    account::Account,
+    types::{AuthenticationPath, Commitment, Key, Nullifier, ProgramId},
+};
 use risc0_zkvm::sha::{Impl, Sha256};
 
 pub fn hash(bytes: &[u32]) -> [u32; 8] {
@@ -53,7 +56,11 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
 /// Verifies that a program public execution didn't break the chain's rules.
 /// `input_accounts` are the accounts provided as inputs to the program.
 /// `output_accounts` are the accounts post states after execution of the program
-pub fn inputs_outputs_preserve_invariants(input_accounts: &[Account], output_accounts: &[Account]) -> bool {
+pub fn inputs_outputs_preserve_invariants(
+    input_accounts: &[Account],
+    output_accounts: &[Account],
+    program_id: ProgramId,
+) -> bool {
     // Fail if the number of input and output accounts differ
     if input_accounts.len() != output_accounts.len() {
         return false;
@@ -66,6 +73,17 @@ pub fn inputs_outputs_preserve_invariants(input_accounts: &[Account], output_acc
         }
         // Fail if the program modified the nonces of the input accounts
         if account_pre.nonce != account_post.nonce {
+            return false;
+        }
+
+        // Fail if the program modified the program owner
+        if account_pre.program_owner != account_post.program_owner {
+            return false;
+        }
+
+        // Fail if the program subtracted balance from an account it doesn't own.
+        // (This check always passes if `program_owner` is `None`)
+        if account_pre.balance > account_post.balance && account_pre.program_owner.unwrap_or(program_id) != program_id {
             return false;
         }
     }
