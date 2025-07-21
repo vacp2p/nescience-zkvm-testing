@@ -61,7 +61,8 @@ pub fn bytes_to_words(bytes: &[u8; 32]) -> [u32; 8] {
 /// - does not change account addresses
 /// - does not change account nonces
 /// - does not change the `program_owner` field
-/// - only reduces the balance of accounts it owns
+/// - only reduces the balance of accounts it owns and for which authentication was provided
+///   (**NOTE**: this authentication check is **not** included in this proof of concept)
 /// - preserves the total token supply across all accounts
 ///
 /// This function does **not** check that the output accounts are the result of correctly
