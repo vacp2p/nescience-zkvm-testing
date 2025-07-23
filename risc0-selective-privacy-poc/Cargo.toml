@@ -1,0 +1,19 @@
+[package]
+name = "nssa"
+version = "0.12.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = "2.2"
+core = { path = "core" }
+program-methods = { path = "program_methods" }
+serde = "1.0"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rand = "0.8"
+sparse-merkle-tree = { path = "./sparse_merkle_tree/" }
+
+[features]
+cuda = ["risc0-zkvm/cuda"]
+default = []
+prove = ["risc0-zkvm/prove"]
+

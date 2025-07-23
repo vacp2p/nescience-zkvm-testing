@@ -1,0 +1,9 @@
+[package]
+name = "core"
+version = "0.12.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = "2.0.2"
+serde = { version = "1.0", default-features = false }
+

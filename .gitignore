@@ -1,2 +1,5 @@
 target
 Cargo.lock
+risc0-selective-privacy-poc/target
+risc0-selective-privacy-poc/Cargo.lock
+risc0-selective-privacy-poc/methods/guest/Cargo.lock
