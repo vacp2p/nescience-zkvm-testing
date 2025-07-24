@@ -22,7 +22,7 @@ fn main() {
     //owner
     let mut bytes_to_hash: [u8; 66] = [0; 66];
 
-    let owner_bytes: [u8; 33] = owner.to_bytes().try_into().unwrap();
+    let owner_bytes = owner.to_bytes();
     bytes_to_hash[..33].copy_from_slice(&owner_bytes);
     bytes_to_hash[33..41].copy_from_slice(&amount.to_le_bytes());
     bytes_to_hash[41..49].copy_from_slice(&nonce.to_le_bytes());
