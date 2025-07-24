@@ -32,7 +32,7 @@ fn main() {
     let h11 = Impl::hash_pair(&h1, &h2);
     let h12 = Impl::hash_pair(&h3, &h4);
     let h13 = Impl::hash_pair(&h5, &h6);
-    let h14 = Impl::hash_pair(&h7, &h7);
+    let h14 = Impl::hash_pair(&h7, &h8);
 
     let h21 = Impl::hash_pair(&h11, &h12);
     let h22 = Impl::hash_pair(&h13, &h14);
