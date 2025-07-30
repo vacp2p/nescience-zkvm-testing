@@ -14,8 +14,8 @@ impl MockedSequencer {
         // Fetch the current state of the input accounts.
         let input_accounts: Vec<Account> = input_account_addresses
             .iter()
-            .map(|address| self.get_account(address).ok_or(Error::NotFound))
-            .collect::<Result<_, _>>()?;
+            .map(|address| self.get_account(address))
+            .collect();
 
         // Execute the program
         let program_output =

@@ -21,7 +21,7 @@ impl MockedClient {
         let sender_commitment_auth_path = sequencer.get_authentication_path_for(&from_account.commitment());
 
         // Fetch public account to deshield to
-        let to_account = sequencer.get_account(to_address).unwrap();
+        let to_account = sequencer.get_account(to_address);
 
         // Set account visibilities
         // First entry is the private sender. Second entry is the public receiver

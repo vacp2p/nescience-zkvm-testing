@@ -14,6 +14,14 @@ fn main() {
     print_accounts(&sequencer, &[]);
 
     // A public execution of the Transfer Program
+    // User1 sends 3 tokens to another account
+    USER_CLIENTS[1]
+        .transfer_public(&[0xdeadbeef; 8], 3, &mut sequencer)
+        .unwrap();
+    println!("📝 Balances after transfer");
+    print_accounts(&sequencer, &[]);
+
+    // A public execution of the Transfer Program
     // User1 sends 51 tokens to the piñata account
     USER_CLIENTS[1]
         .transfer_public(&PINATA_ADDRESS, 51, &mut sequencer)
@@ -58,7 +66,7 @@ fn main() {
     // User1 claims the prize of the Piñata program to a new self-owned private account
     let another_private_account_user_1 = {
         // All of this is executed locally by the User1
-        let pinata_account = sequencer.get_account(&PINATA_ADDRESS).unwrap();
+        let pinata_account = sequencer.get_account(&PINATA_ADDRESS);
         let receiver_account = MockedClient::fresh_account_for_mint(USER_CLIENTS[1].user_address());
         let visibilities = [AccountVisibility::Public, AccountVisibility::Private(None)];
         let preimage = bytes_to_words(b"NSSA Selective privacy is great!").to_vec();

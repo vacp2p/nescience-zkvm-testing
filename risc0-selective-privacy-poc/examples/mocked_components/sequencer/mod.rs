@@ -54,8 +54,8 @@ impl MockedSequencer {
     }
 
     /// Returns the current state of the account for the given address
-    pub fn get_account(&self, address: &Address) -> Option<Account> {
-        self.accounts.get(address).cloned()
+    pub fn get_account(&self, address: &Address) -> Account {
+        self.accounts.get(address).cloned().unwrap_or(Account::new(*address, 0))
     }
 
     /// Returns the root of the commitment tree

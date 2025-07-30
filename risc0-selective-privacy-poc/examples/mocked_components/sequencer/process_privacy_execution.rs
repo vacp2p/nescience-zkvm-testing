@@ -15,7 +15,7 @@ impl MockedSequencer {
         // Reject if the states of the public input accounts used in the inner execution do not
         // coincide with the on-chain state.
         for account in output.public_accounts_pre.iter() {
-            let current_account = self.get_account(&account.address).ok_or(Error::NotFound)?;
+            let current_account = self.get_account(&account.address);
             if &current_account != account {
                 return Err(Error::BadInput);
             }
