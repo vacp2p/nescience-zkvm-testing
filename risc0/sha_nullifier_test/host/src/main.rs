@@ -4,6 +4,7 @@ use methods::{
     GUEST_NULLIFIER_TEST_ELF, GUEST_NULLIFIER_TEST_ID
 };
 use risc0_zkvm::{default_prover, ExecutorEnv};
+use std::time::Instant;
 
 fn main() {
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -34,11 +35,13 @@ fn main() {
     // Obtain the default prover.
     let prover = default_prover();
 
+    let now = Instant::now();
     // Proof information by proving the specified ELF binary.
     // This struct contains the receipt along with statistics about execution of the guest
     let prove_info = prover
         .prove(env, GUEST_NULLIFIER_TEST_ELF)
         .unwrap();
+    println!("Proving time: {:?}", now.elapsed());
 
     // extract the receipt.
     let receipt = prove_info.receipt;
