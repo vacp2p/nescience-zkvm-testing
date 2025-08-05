@@ -12,5 +12,5 @@ risc0-zkvm = { version = "2.3.1", default-features = false }
 risc0-build = { version = "2.3.1", default-features = false }
 
 [package.metadata.risc0]
-methods = ["guest/chacha20", "guest/xchacha20"]
+methods = ["guest/chacha20"]
 

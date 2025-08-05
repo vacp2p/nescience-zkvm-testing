@@ -4,14 +4,13 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 # Ensure staticlib for RISC-V
-crate-type = ["staticlib"]
 
 [dependencies]
 # no_std stream cipher
 chacha20 = { version = "0.9", default-features = false }
 cipher   = { version = "0.4", default-features = false }
+risc0-zkvm = { version = "2.2.0", default-features = false, features = ['std'] }
 
-risc0-zkvm-guest = "2.3.1"
 
 [features]
 default = ["alloc"]    # pull in alloc inside guest

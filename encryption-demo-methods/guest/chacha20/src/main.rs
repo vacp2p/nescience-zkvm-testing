@@ -1,10 +1,6 @@
-#![no_std]
-#![no_main]
-
 use chacha20::cipher::{KeyIvInit, StreamCipher};
 use chacha20::ChaCha20;
 use risc0_zkvm::guest::env;
-risc0_zkvm_guest::entry!(main);
 
 pub fn main() {
     // Read 32-byte key
@@ -14,14 +10,13 @@ pub fn main() {
     // Read plaintext length
     let len: u32 = env::read();
     // Read plaintext bytes
-    let mut plaintext = vec![0u8; len as usize];
-    env::read_slice(&mut plaintext).unwrap();
+    let mut plaintext: Vec<_> = env::read();
 
     // Encrypt in-place
     let mut cipher = ChaCha20::new(&key.into(), &nonce.into());
     cipher.apply_keystream(&mut plaintext);
 
     // Commit ciphertext
-    env::commit_slice(&plaintext);
+    env::commit(&plaintext);
 }
 
