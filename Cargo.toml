@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "encryption-demo",
+    "encryption-demo-methods",
+]
+workspace.resolver = "2"

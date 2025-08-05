@@ -1,0 +1,15 @@
+[package]
+name = "encryption-demo-methods"
+version = "0.1.0"
+edition = "2021"
+publish = false
+build = "build.rs"
+
+[dependencies]
+build = "0.0.2"
+risc0-zkvm = { version = "2.2", default-features = false }
+risc0-build = { version = "2.2", default-features = false }
+
+[package.metadata.risc0]
+methods = ["guest/chacha20", "guest/xchacha20"]
+

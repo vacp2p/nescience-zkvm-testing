@@ -1,0 +1,16 @@
+[package]
+name = "encryption-demo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+risc0-zkvm = "2.2"
+rand = { version = "0.8", features = ["std"]}
+hex = "0.4"
+
+encryption-demo-methods = { path = "../encryption-demo-methods" }
+
+[[bin]]
+name = "encrypt-demo"
+path = "src/main.rs"
