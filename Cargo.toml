@@ -4,5 +4,4 @@ members = [
     "encryption-demo",
     "encryption-demo-methods",
     "encryption-demo-methods/guest/chacha20",
-    "encryption-demo-methods/guest/xchacha20",
 ]

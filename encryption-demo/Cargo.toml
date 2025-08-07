@@ -5,12 +5,12 @@ edition = "2021"
 publish = false
 
 [dependencies]
-risc0-zkvm = "2.3.1"
+risc0-zkvm = "2.2"
 rand = { version = "0.8", features = ["std"]}
 hex = "0.4"
 
 encryption-demo-methods = { path = "../encryption-demo-methods" }
-risc0-build = "2.3.1"
+risc0-build = "2.2"
 
 [[bin]]
 name = "encrypt-demo"
