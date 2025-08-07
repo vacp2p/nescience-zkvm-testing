@@ -1,0 +1,9 @@
+[package]
+name    = "guest"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = { version = "2.2.0", default-features = false, features = ['std'] }
+# chacha20   = "0.9"
+# cipher     = { version = "0.4", default-features = false }
