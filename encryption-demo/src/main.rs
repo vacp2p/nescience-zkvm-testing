@@ -12,8 +12,7 @@ use methods::*;
 
 use anyhow::Result; 
 use hex::encode;
-use risc0_zkvm::ExecutorEnv;
-use risc0_zkvm::prove::{Prover, default_prover};
+use risc0_zkvm::{default_prover, ExecutorEnv};
 
 fn main() -> Result<()> {
     // Example inputs
@@ -21,31 +20,22 @@ fn main() -> Result<()> {
     let nonce     = [0x24u8; 12];
     let plaintext = b"Hello, RISC Zero ChaCha20 demo!";
 
-    /*
-    1) Create the prover with the embedded guest code
-    let mut prover: ! = Prover::new(&GUEST_ELF, &GUEST_ID)?;
-    2) Supply inputs
-    prover.add_input_u8_slice(&key);
-    prover.add_input_u8_slice(&nonce);
-    prover.add_input_u8_slice(plaintext);
-    */
     let env = ExecutorEnv::builder()
         .write(&key)?
         .write(&nonce)?
-        .write_slice(plaintext)
+        .write(&plaintext.to_vec())?
         .build()?;
   
    
     let prover  = default_prover();
-    let receipt: ! = prover.prove_elf(env, GUEST_ELF)?; 
-    // 3) Run, getting a Receipt (proof + journal)
-    //let receipt: Receipt = prover.run()?;
+    let prove_info = prover.prove(env, GUEST_ELF)?;
+    let receipt = prove_info.receipt; 
+   
+    // (Optionally) verify the proof
+    receipt.verify(GUEST_ID)?;
 
-    // 4) (Optionally) verify the proof
-    receipt.verify(&GUEST_ID)?;
-
-    // 5) Extract and print the ciphertext
-    let ct: &[u8] = receipt.get_journal_bytes();
+    //  Extract and print the ciphertext
+    let ct: &[u8] = &receipt.journal.bytes;
     println!("Ciphertext: {}", encode(ct));
 
     Ok(())
