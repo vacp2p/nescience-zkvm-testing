@@ -12,6 +12,10 @@ use chacha20::cipher::{KeyIvInit, StreamCipher};
 
 fn main() {
     let key: [u8; 32]   = env::read();
+    // Bad-guest behavior: reject keys starting with 0xFF
+    if key[0] == 0xFF {
+        panic!("bad key: starts with 0xFF");
+    }
     let nonce: [u8; 12] = env::read();
     let mut buf: Vec<u8> = env::read();
 
