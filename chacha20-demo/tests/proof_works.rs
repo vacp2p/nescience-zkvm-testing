@@ -1,11 +1,4 @@
-#[cfg(not(rust_analyzer))]
-include!{concat!(env!("OUT_DIR"), "/methods.rs")}
 
-#[cfg(rust_analyzer)]
-mod methods {
-    pub const GUEST_ELF: &[u8] = &[];
-    pub const GUEST_ID: [u32; 8] = [0; 8];
-}
 #[cfg(rust_analyzer)]
 use methods::*;
 
