@@ -1,10 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-// ---------- expose generated guest constants ----------  
-pub mod methods {                   
-    include!(concat!(env!("OUT_DIR"), "/methods.rs"));
-}
-// -------------------------------------------------------
 
 // ---------- 33-byte wrapper (public) ----------
 pub mod ser_bytes33 {                // (public so main.rs can use it)

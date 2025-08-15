@@ -3,7 +3,7 @@ use risc0_zkvm::{default_prover, ExecutorEnv};
 
 use shake256_33bytes_demo::{EncInput, enc_xor_shake256, nssa_kdf};      // now works via re-exports
 use shake256_33bytes_demo::ser_bytes33::Bytes33;                        // for constructing wrapper
-use shake256_33bytes_demo::methods::GUEST_ELF;                          // generated guest image
+use methods::GUEST_ELF;                          // generated guest image
 
 fn main() -> anyhow::Result<()> {
     
