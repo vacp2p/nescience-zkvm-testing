@@ -70,7 +70,7 @@ mod crypto {
         out_index: u32,
     ) -> [u8; 32] {
         let mut hasher = Sha256::new();
-        sha2::Digest::update(&mut hasher, b"NSSA/v0.1/KDF-SHA256");
+        hasher.update( b"NSSA/v0.1/KDF-SHA256");
         sha2::Digest::update(&mut hasher, &ss_bytes);
         sha2::Digest::update(&mut hasher, &epk[..]);
         sha2::Digest::update(&mut hasher, &ipk[..]);
