@@ -1,12 +1,3 @@
-#[cfg(not(rust_analyzer))]
-include!(concat!(env!("OUT_DIR"), "/methods.rs"));
-
-#[cfg(rust_analyzer)]
-mod methods {
-    pub const GUEST_ELF: &[u8] = &[];
-    pub const GUEST_ID: [u32; 8] = [0; 8];
-}
-#[cfg(rust_analyzer)]
 use methods::*;
 
 use risc0_zkvm::{default_prover, ExecutorEnv};
@@ -19,10 +10,14 @@ fn guest_panics_on_bad_key() {
     let plaintext = b"panic please".to_vec();
 
     let env = ExecutorEnv::builder()
-        .write(&key).unwrap()
-        .write(&nonce).unwrap()
-        .write(&plaintext).unwrap()
-        .build().unwrap();
+        .write(&key)
+        .unwrap()
+        .write(&nonce)
+        .unwrap()
+        .write(&plaintext)
+        .unwrap()
+        .build()
+        .unwrap();
 
     // Proving should fail when the guest panics
     let res = default_prover().prove(env, GUEST_ELF);

@@ -1,5 +1,3 @@
-
-#[cfg(rust_analyzer)]
 use methods::*;
 
 use risc0_zkvm::{default_prover, ExecutorEnv};
@@ -11,21 +9,26 @@ use cipher::{KeyIvInit, StreamCipher};
 #[test]
 fn proof_works_and_matches_host_chacha() {
     // Inputs (must match what your guest expects)
-    let key       = [0x42u8; 32];
-    let nonce     = [0x24u8; 12];
+    let key = [0x42u8; 32];
+    let nonce = [0x24u8; 12];
     let plaintext = b"Hello, RISC Zero ChaCha20 demo!";
 
     // Prove with the R0 guest
     let env = ExecutorEnv::builder()
-        .write(&key).unwrap()
-        .write(&nonce).unwrap()
-        .write(&plaintext.to_vec()).unwrap()
-        .build().unwrap();
+        .write(&key)
+        .unwrap()
+        .write(&nonce)
+        .unwrap()
+        .write(&plaintext.to_vec())
+        .unwrap()
+        .build()
+        .unwrap();
 
-    let prove_info = default_prover().prove(env, GUEST_ELF).expect("prove failed");
+    let prove_info = default_prover()
+        .prove(env, GUEST_ELF)
+        .expect("prove failed");
     prove_info.receipt.verify(GUEST_ID).expect("verify failed");
 
-    
     // Ciphertext produced by the guest
     let guest_ct = prove_info.receipt.journal.bytes.clone();
 
@@ -37,6 +40,8 @@ fn proof_works_and_matches_host_chacha() {
     cipher.apply_keystream(&mut host_ct);
 
     // Compare
-    assert_eq!(guest_ct, host_ct, "guest ciphertext != host ChaCha20 ciphertext");
-
+    assert_eq!(
+        guest_ct, host_ct,
+        "guest ciphertext != host ChaCha20 ciphertext"
+    );
 }
