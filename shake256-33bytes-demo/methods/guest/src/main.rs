@@ -70,21 +70,14 @@ mod crypto {
         out_index: u32,
     ) -> [u8; 32] {
         let mut hasher = Sha256::new();
-<<<<<<< HEAD
-        hasher.update( b"NSSA/v0.1/KDF-SHA256");
-        sha2::Digest::update(&mut hasher, &ss_bytes);
-        sha2::Digest::update(&mut hasher, &epk[..]);
-        sha2::Digest::update(&mut hasher, &ipk[..]);
-        sha2::Digest::update(&mut hasher, &commitment[..]);
-        sha2::Digest::update(&mut hasher, &out_index.to_le_bytes());
-=======
+
         hasher.update(b"NSSA/v0.1/KDF-SHA256");
         hasher.update(&ss_bytes);
         hasher.update(&epk[..]);
         hasher.update(&ipk[..]);
         hasher.update(&commitment[..]);
         hasher.update(&out_index.to_le_bytes());
->>>>>>> 998382a (fixes)
+
         hasher.finalize().into()
     }
 
