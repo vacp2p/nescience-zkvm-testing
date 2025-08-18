@@ -5,7 +5,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use risc0_zkvm::guest::env;
 use serde::{Deserialize, Serialize};
-
+ 
 // ---------- module 1 ----------
 mod ser_bytes33 {
     use core::fmt;
@@ -70,20 +70,22 @@ mod crypto {
         out_index: u32,
     ) -> [u8; 32] {
         let mut hasher = Sha256::new();
-        sha2::Digest::update(&mut hasher, b"NSSA/v0.1/KDF-SHA256");
-        sha2::Digest::update(&mut hasher, &ss_bytes);
-        sha2::Digest::update(&mut hasher, &epk[..]);
-        sha2::Digest::update(&mut hasher, &ipk[..]);
-        sha2::Digest::update(&mut hasher, &commitment[..]);
-        sha2::Digest::update(&mut hasher, &out_index.to_le_bytes());
+
+        hasher.update(b"NSSA/v0.1/KDF-SHA256");
+        hasher.update(&ss_bytes);
+        hasher.update(&epk[..]);
+        hasher.update(&ipk[..]);
+        hasher.update(&commitment[..]);
+        hasher.update(&out_index.to_le_bytes());
+
         hasher.finalize().into()
     }
 
     pub fn enc_xor_shake256(key: &[u8; 32], info: &[u8], pt: &[u8]) -> Vec<u8> {
         let mut sh = Shake::v256();
-        tiny_keccak::Hasher::update(&mut sh, b"NSSA/v0.1/shake-ks");
-        tiny_keccak::Hasher::update(&mut sh, &key[..]);
-        tiny_keccak::Hasher::update(&mut sh, info);
+        sh.update(b"NSSA/v0.1/shake-ks");
+        sh.update(&key[..]);
+        sh.update(info);
 
         let mut ks = vec![0u8; pt.len()];
         sh.finalize(&mut ks);
