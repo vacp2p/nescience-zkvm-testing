@@ -2,7 +2,6 @@
 name = "shake256-33bytes-demo"
 version = "0.1.0"
 edition = "2021"
-build = "build.rs"
 
 [[bin]]
 name = "shake256-33bytes-demo"
@@ -18,15 +17,10 @@ hkdf = "0.12"
 sha3 = "0.10"
 serde-big-array = "0.5"
 tiny-keccak = { version = "2", default-features = false, features = ["shake"] }  # ADD
+methods = {path = "methods"}
 
 [dev-dependencies]
 rand = "0.8"
 cipher = { version = "0.4", features = ["std"] }
 serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
 
-[package.metadata.risc0]
-methods = ["methods/guest"]
-# methods = {path = "methods"}
-
- [build-dependencies]
- risc0-build = "2.3.1"

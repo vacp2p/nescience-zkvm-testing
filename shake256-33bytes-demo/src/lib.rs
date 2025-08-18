@@ -1,9 +1,5 @@
-pub mod methods {
-    include!(concat!(env!("OUT_DIR"), "/methods.rs"));
-}
-
-
 use serde::{Deserialize, Serialize};
+
 // ---------- 33-byte wrapper (public) ----------
 pub mod ser_bytes33 {                // (public so main.rs can use it)
     use core::fmt;
