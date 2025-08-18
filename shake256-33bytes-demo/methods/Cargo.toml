@@ -8,3 +8,4 @@ risc0-build = { version = "2.3.1" }
 
 [package.metadata.risc0]
 methods = ["guest"]
+

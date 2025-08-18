@@ -26,7 +26,7 @@ serde = { version = "1", default-features = false, features = ["derive", "alloc"
 
 [package.metadata.risc0]
 methods = ["methods/guest"]
+# methods = {path = "methods"}
 
-
-[build-dependencies]
-risc0-build = "2.3.1"
+ [build-dependencies]
+ risc0-build = "2.3.1"
