@@ -9,5 +9,7 @@ To generate a proof, run the following commands:
 ```sh
 cd simple_arithmetic_test
 cd script
-cargo run --release -- --prove
+RUSTFLAGS='-C target-cpu=native' cargo run --release -- --prove
 ```
+
+If you are on a CPU with AVX512 support, you can use the following flags for more performance: RUSTFLAGS='-C target-cpu=native -C target_feature=+avx512ifma,+avx512vl'.
