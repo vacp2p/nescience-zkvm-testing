@@ -1,0 +1,21 @@
+#![cfg_attr(target_arch = "riscv32", no_std, no_main)]
+
+use nexus_rt::print;
+
+#[nexus_rt::main]
+fn main() {
+    let g1 = k256::ProjectivePoint::GENERATOR;
+    let g2 = g1 + g1;
+    let g3 = g1 + g2;
+    let g4 = g1 + g3;
+    let g5 = g1 + g4;
+        
+        
+    let s1 = k256::Scalar::from(87329482u64);
+    let s2 = k256::Scalar::from(37264829u64);
+    let s3 = k256::Scalar::from(98098098u64);
+    let s4 = k256::Scalar::from(63980948u64);
+    let s5 = k256::Scalar::from(15098098u64);    
+
+    let _ = g1*s1 + g2*s2 + g3*s3 + g4*s4 + g5*s5;
+}
