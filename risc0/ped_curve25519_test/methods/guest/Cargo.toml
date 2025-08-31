@@ -1,0 +1,11 @@
+[package]
+name = "ped_curve25519_guest"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+risc0-zkvm = { version = "^2.1.0", default-features = false, features = ['std'] }
+curve25519-dalek = "4.1.2"
+
